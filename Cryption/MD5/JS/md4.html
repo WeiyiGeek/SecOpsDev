@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MD4 加密 && NTLM 碰撞</title>
+    <script src="https://nf404.github.io/crypto-api/crypto-api.min.js"></script>
+    <script src="./md4.js"></script> 
+</head>
+<body>
+    <p>请输入需要加密成NTLM的明文密码:</p>
+    <label for="src">明文密码:</label><input type="text" value="" id="src"> &nbsp; &nbsp; 
+    <input type="button" value="转换" onclick="ntlm_encoder()">
+    <hr>
+    <p>转换结果:</p>
+    <p id="result"></p>
+    <script>
+        function ntlm_encoder(){
+            var str = document.getElementById("src").value;
+            var hex = "";
+            var hex1 = "";
+            for (i=0;i<str.length;i++){
+                hex += str.charCodeAt(i).toString(16)+"00";
+            }
+            resultASCII=CryptoApi.hash('md4', hex)
+            resultUnicode=hex_md4(str);
+            document.getElementById("result").innerHTML="<mark> String to Hex Unicode :"+ hex + "<br> MD4 Text String : "+resultASCII+"<br> MD4 Hex String [NTLM]: "+resultUnicode+"</mark>";
+        }
+      </script>
+</body>
+</html>
