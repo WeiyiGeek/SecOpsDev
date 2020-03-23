@@ -1,0 +1,45 @@
+version: '3.1'
+services:
+  db8:
+    image: mysql
+    container_name: mysql8.x
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: www.weiyigeek.top
+      MYSQL_DATABASE: test
+      MYSQL_USER: test8
+      MYSQL_PASSWORD: weiyigeek.top
+    volumes:
+      - "/app/mysql8:/var/lib/mysql"
+    ports:
+      - 3306:3306
+  db5:
+    image: mysql:5.7.29
+    container_name: mysql5.x
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: www.weiyigeek.top
+      MYSQL_DATABASE: test
+      MYSQL_USER: test5
+      MYSQL_PASSWORD: weiyigeek.top
+    volumes:
+      - "/app/mysql5:/var/lib/mysql"
+    ports:
+      - 3305:3306
+  redis:
+    image: redis
+    container_name: redis
+    restart: always
+    command: redis-server --requirepass weiyigeek.top
+    volumes:
+      - "/app/redis:/data"
+    ports:
+      - 6379:6379
+  adminer:
+    image: adminer
+    container_name: MySQLManager
+    restart: always
+    ports:
+      - 8888:8080
