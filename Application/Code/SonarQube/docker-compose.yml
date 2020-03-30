@@ -1,0 +1,39 @@
+version: '3.1'
+services:
+  postgresql:
+    image: postgres
+    container_name: postgresql
+    restart: always
+    environment:
+      POSTGRES_USER: sonar
+      POSTGRES_PASSWORD: cqzk.com.cn
+    volumes:
+      - "/app/postgresql:/var/lib/postgresql/data"
+    ports:
+      - 5432:5432
+    networks:
+      - mysql_database-net
+  sonarqube:
+    image: sonarqube
+    container_name: sonarqube
+    restart: always
+    environment:
+      SONARQUBE_JDBC_USERNAME: "sonar" 
+      SONARQUBE_JDBC_PASSWORD: "cqzk.com.cn"
+      SONARQUBE_JDBC_URL: "jdbc:postgresql://postgresql:5432/sonar"
+    volumes:
+      - "/app/sonarqube/data:/opt/sonarqube/data"
+      - "/app/sonarqube/logs:/opt/sonarqube/logs"
+      - "/app/sonarqube/conf:/opt/sonarqube/conf"
+      - "/app/sonarqube/extensions:/opt/sonarqube/extensions"
+    ports:
+      - 9000:9000
+    links: 
+      - postgresql
+    depends_on:
+      - postgresql
+    networks:
+      - mysql_database-net
+networks:
+  mysql_database-net:
+    external: true

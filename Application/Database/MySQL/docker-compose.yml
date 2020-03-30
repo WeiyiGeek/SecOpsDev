@@ -1,0 +1,73 @@
+version: '3.1'
+services:
+  db8:
+    image: mysql
+    container_name: mysql8.x
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: WwW.cqzk.com.CN
+      MYSQL_DATABASE: test
+      MYSQL_USER: test8
+      MYSQL_PASSWORD: cqzk.com.cn
+    volumes:
+      - "/app/mysql8:/var/lib/mysql"
+    ports:
+      - 3306:3306
+    networks:
+      - database-net  
+  db5:
+    image: mysql:5.7.29
+    container_name: mysql5.x
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: WwW.cqzk.com.CN
+      MYSQL_DATABASE: test
+      MYSQL_USER: test5
+      MYSQL_PASSWORD: cqzk.com.cn
+    volumes:
+      - "/app/mysql5:/var/lib/mysql"
+    ports:
+      - 3305:3306
+    networks:
+      - database-net
+  redis:
+    image: redis
+    container_name: redis
+    restart: always
+    command: redis-server --requirepass cqzk.com.cn
+    volumes:
+      - "/app/redis:/data"
+    ports:
+      - 6379:6379
+    networks:
+      - database-net
+  adminer:
+    image: adminer
+    container_name: MySQLManager
+    restart: always
+    ports:
+      - 8888:8080
+    links:
+      - db8
+      - db5
+    networks:
+      - database-net
+  tomcat:
+    image: tomcat:7.0.103-jdk8
+    container_name: OracleManager
+    restart: always
+    volumes:
+      - "/app/treesoft:/usr/local/tomcat/webapps"
+    ports:
+      - 8080:8080
+    links:
+      - db8
+      - db5
+      - redis
+    networks:
+      - database-net
+networks:
+  database-net:
+    driver: bridge
