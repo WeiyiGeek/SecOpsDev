@@ -1,0 +1,40 @@
+#OpenLDAP 环境部署
+#mkdir -p /opt/OpenLDAP/{config,database}
+version: '3.1'
+services:
+  openldap-service:
+    image: osixia/openldap
+    container_name: openldap
+    restart: always
+    environment:
+      LDAP_ORGANISATION: Weiyi
+      LDAP_DOMAIN: Weiyi.com.cn
+      LDAP_ADMIN_PASSWORD: Weiyi
+      LDAP_TLS: 'false'
+    volumes:
+      - "/opt/OpenLDAP/database:/var/lib/ldap"
+      - "/opt/OpenLDAP/config:/etc/ldap/slapd.d"
+    ports:
+      - 389:389
+      - 689:689
+    networks:
+      - opt_default
+
+  phpldapadmin-service:
+    image: osixia/phpldapadmin
+    container_name: phpldapadmin
+    restart: always
+    environment:
+      PHPLDAPADMIN_LDAP_HOSTS: Weiyi.com.cn
+      PHPLDAPADMIN_HTTPS: 'false'
+    ports:
+      - 6443:443
+      - 6080:80
+    networks:
+      - opt_default
+    links:
+      - openldap-service
+
+networks:
+  opt_default:
+    external: true

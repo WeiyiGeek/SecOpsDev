@@ -1,0 +1,39 @@
+version: '2'
+services: 
+  db:
+    image: mysql:5.7
+    volumes:
+      - "/mnt/d/Docker/db:/var/lib/mysql/"
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: Thp#2020.
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wp
+      MYSQL_PASSWORD: Wp#2020.
+  wordpress:
+    image: wordpress:latest
+    depends_on:
+      - db
+    volumes:
+      - "/mnt/d/Docker/wp:/var/www/html"
+    ports:
+      - "8080:80"
+      - "443:443"    
+    restart: always
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: wp
+      WORDPRESS_DB_PASSWORD: Wp#2020.
+# volumes:
+#   db_data:
+#     driver: local
+#     driver_opts:
+#       o: bind
+#       type: none
+#       device: /mnt/d/Docker/db
+#   wp_site:
+#     driver: local
+#     driver_opts:
+#       o: bind
+#       type: none
+#       device: 
