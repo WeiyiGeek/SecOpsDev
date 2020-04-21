@@ -6,7 +6,7 @@ services:
     restart: always
     environment:
       POSTGRES_USER: sonar
-      POSTGRES_PASSWORD: cqzk.com.cn
+      POSTGRES_PASSWORD: WeiyiGeek.com.cn
     volumes:
       - "/app/postgresql:/var/lib/postgresql/data"
     ports:
@@ -19,7 +19,7 @@ services:
     restart: always
     environment:
       SONARQUBE_JDBC_USERNAME: "sonar" 
-      SONARQUBE_JDBC_PASSWORD: "cqzk.com.cn"
+      SONARQUBE_JDBC_PASSWORD: "WeiyiGeek.com.cn"
       SONARQUBE_JDBC_URL: "jdbc:postgresql://postgresql:5432/sonar"
     volumes:
       - "/app/sonarqube/data:/opt/sonarqube/data"
