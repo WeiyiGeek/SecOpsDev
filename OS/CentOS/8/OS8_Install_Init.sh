@@ -15,7 +15,8 @@ echo -e"--[网卡配置结束]--"
 
 
 echo -e "\e[32m#########\n#SSH服务配置\n#########\e[0m"
-sed -i 's/#PermitRootLogin/PermitRootLogin/g' /etc/ssh/sshd_config
+echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config
+echo 'PasswordAuthentication yes' >> /etc/ssh/sshd_config
 systemctl restart sshd
 echo "--[SSH服务配置结束]--"
 
@@ -46,5 +47,5 @@ echo -e "\n############################\n#安装常用的运维软件\n#########
 #编译依赖
 dnf install -y gcc gcc-c++ openssl-devel bzip2-devel
 #常规软件
-dnf install -y nano vim net-tools tree wget dos2unix unzip htop ncdu bash-completion
+dnf install -y nano vim net-tools tree wget dos2unix unzip htop ncdu bash-completion ntpdate
 echo "--[安装安装完成]--"
