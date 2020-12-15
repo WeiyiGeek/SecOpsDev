@@ -80,7 +80,7 @@ function Record(){
       #差异比对
       DIFFTEXT=$(diff --normal $TARGETFILE ${RECORDFILE} | egrep "^[0-9]" | tr '\n' '__' )
       if [[ "$(echo ${TARGETURL} | grep -c "site")" == "1" ]];then
-        phantomjs "/usr/local/src/phantomjs/examples/rasterize.js" "http://www.cqksy.cn/site/index.html"  ${RECORDFILE}.png
+        phantomjs "/usr/local/src/phantomjs/examples/rasterize.js" "http://www.weiyigeek.top/site/index.html"  ${RECORDFILE}.png
       else
         phantomjs "/usr/local/src/phantomjs/examples/rasterize.js" ${TARGETURL} ${RECORDFILE}.png
       fi

@@ -1,0 +1,140 @@
+
+#!/bin/bash
+set -e
+NET_DIR=/etc/sysconfig/network-scripts/
+NET_FILENAME=ifcfg-ens192
+IPADDR=$1
+GATEWAY=$2
+
+if [[ $# -le 1 ]];then
+  echo -e "\e[32m[*]Usage: $0 IP-Address Gateway \e[0m"
+  echo -e "\e[32m[*]Usage: $0 192.168.1.99 192.168.1.1 \e[0m"
+  exit 1
+fi
+
+if [[ ! -f ${NET_DIR}${NET_FILENAME} ]];then
+  echo -e "\e[33m[*] Not Found ${NET_DIR}${NET_FILENAME}\e[0m"
+  exit 2
+fi
+
+sed -i 's/^ONBOOT=.*$/ONBOOT="yes"/' ${NET_DIR}${NET_FILENAME}
+sed -i 's/^BOOTPROTO=.*$/BOOTPROTO="static"/' ${NET_DIR}${NET_FILENAME}
+sed -i "s/^IPADDR=.*$/IPADDR=${IPADDR}/" ${NET_DIR}${NET_FILENAME}
+sed -i "s/^GATEWAY=.*$/GATEWAY=${GATEWAY}/" ${NET_DIR}${NET_FILENAME}
+
+service network restart && ip addr
+
+
+
+
+[root@localhost CentOS]# chmod +x install.sh
+[root@localhost CentOS]# ls
+doc  install.sh  packages  Tools  unattend_install.conf
+[root@localhost CentOS]# ./install.sh
+iscsi is not installed.
+t250s_checkFC.sh:行466: lspci: 未找到命令
+complete FC checking.
+Verify the UltraPath existence.
+The UltraPath is not installed.
+iscsi is not installed.
+Modify system configuration.[file:/etc/modprobe.d/nxupmodules.conf,module:qla2xxx,item:qlport_down_retry,value:5]
+Modify system configuration.[file:/etc/modprobe.d/nxupmodules.conf,module:lpfc,item:lpfc_nodev_tmo,value:5]
+Modify system configuration.[file:/etc/systemd/system.conf,item:DefaultTimeoutStartSec,value:600s]
+If the operating system is installed on a local drive of the server, you are advised
+to choose boot from local; if the operating system is installed on a SAN storage
+system, you must choose boot from san. Please choose the boot type of your system:
+<1>--boot-from-Local
+<2>--boot-from-SAN
+please input your select:1
+准备中...                          ########################################
+正在升级/安装...
+UltraPath-21.06.057-2                 ########################################
+User configuration is saved successfully.
+The boot service is installed successfully.
+The running service is installed successfully.
+************************************Attention************************************
+* UltraPath would modify some parameters of HBA cards for better performace. If *
+* UltraPath is installed for the first time, you may need to update the initrd  *
+* image before system reboot to make the modification take effect.              *
+*********************************************************************************
+*********************************************************************************
+* UltraPath will use the system hostname for alarm generation and automatic host*
+* registration. Make sure that the system hostname is correctly configured..    *
+*********************************************************************************
+The installation is complete. Whether to restart the system now?
+<Y|N>:
+
+
+
+sed -i "s/^SELINUX=.*$/SELINUX=disabled/" /etc/selinux/config
+
+setenforce 0
+
+yum install -y yum-cron
+
+sed -i "s#keepcache=0#keepcache=1#g" /etc/yum.conf && echo -e "缓存目录:" && grep "cachedir" /etc/yum.conf 
+sed -i "s#update_messages = yes#update_messages = no#g" /etc/yum/yum-cron.conf
+sed -i "s#download_updates = yes#download_updates = no#g" /etc/yum/yum-cron.conf
+
+systemctl enable yum-cron
+systemctl restart yum-cron
+
+
+
+
+echo -e "\e[32m#########\n#Yum源设定\n#########\e[0m"
+curl -o /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
+curl -o /etc/yum.repos.d/CentOS-epel.repo http://mirrors.aliyun.com/repo/epel-7.repo
+sed -i "s#mirrors.cloud.aliyuncs.com#mirrors.aliyun.com#g" /etc/yum.repos.d/CentOS-Base.repo
+yum clean all
+yum makecache
+rpm  --import http://mirrors.aliyun.com/centos/RPM-GPG-KEY-CentOS-7
+yum update -y && yum upgrade -y &&  yum -y install epel*
+echo "--[YUM替换更新应用软件完成]--"
+
+
+echo -e "\e[32m#########\n#系统内核版本升级\n#########\e[0m"
+rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
+yum -y install https://www.elrepo.org/elrepo-release-7.el7.elrepo.noarch.rpm
+yum --disablerepo="*" --enablerepo=elrepo-kernel repolist
+yum --disablerepo="*" --enablerepo=elrepo-kernel list kernel*
+yum -y --enablerepo=elrepo-kernel install kernel-ml-5.7.0-1.x86_64 kernel-ml-devel-5.7.0-1.x86_64 
+awk -F \' '$1=="menuentry " {print i++ " : " $2}' /etc/grub2.cfg
+sudo grub2-set-default 0
+#传统引导
+grub2-mkconfig -o /boot/grub2/grub.cfg
+grubby --default-kernel
+reboot
+#yum -y --enablerepo=elrepo-kernel install kernel-ml-tools.x86_64 
+#sudo grub2-set-default 0
+
+
+echo -e "\n############################\n#安装常用的运维软件\n####################################\n"
+#编译依赖
+yum install -y gcc gcc-c++ openssl-devel bzip2-devel
+#常规软件
+yum install -y nano vim net-tools tree unzip htop ncdu bash-completion wget dos2unix ntpdate
+echo "--[安装安装完成]--"
+
+
+
+
+
+yum install -y httpd createrepo
+
+
+
+## YUM本地仓库搭建 
+mv /etc/httpd/conf.d/welcome.conf{,.bak} && mkdir /var/www/html/yum/
+find /var/cache/yum -name *.rpm -exec cp -a {} /var/www/html/yum/ \;
+# 权限非常重要否则后面httpd访问下载提示权限不足
+cp v${K8SVERSION}.tar.gz /var/www/html/yum/ && chmod +644 /var/www/html/yum/v${K8SVERSION}.tar.gz
+# 仓库软件索引生成以及更新指定仓库
+createrepo -pdo /var/www/html/yum/ /var/www/html/yum/
+createrepo --update /var/www/html/yum/
+
+
+## 本地yum仓库端口开放设置
+firewall-cmd --add-port=80/tcp --permanent
+firewall-cmd --reload
+systemctl start httpd
