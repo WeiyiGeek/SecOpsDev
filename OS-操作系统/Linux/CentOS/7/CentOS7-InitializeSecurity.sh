@@ -2,27 +2,47 @@
 # @Author: WeiyiGeek
 # @Description: CentOS7 TLS Security Initiate
 # @Create Time:  2019年5月6日 11:04:42
-# @Last Modified time: 2020-03-16 11:06:31
+# @Last Modified time: 2021-11-15 11:06:31
 # @E-mail: master@weiyigeek.top
 # @Blog: https://www.weiyigeek.top
-# @Version: 1.3
+# @wechat: WeiyiGeeker
+# @Github: https://github.com/WeiyiGeek/SecOpsDev/tree/master/OS-操作系统/Linux/
+# @Version: 3.2
 ## ----------------------------------------- ##
 # 脚本主要功能说明:
 # (1) CentOS7系统初始化操作包括IP地址设置、基础软件包更新以及安装加固。
 # (2) CentOS7系统容器以及JDK相关环境安装。
 # (3) CentOS7系统中异常错误日志解决。
+# (4) CentOS7系统中常规服务安装配置，加入数据备份目录。
 ## ----------------------------------------- ##
 
 ## 系统全局变量定义
+# [系统配置]
 HOSTNAME=SecurityServerTemplate
+EXECTIME=$(date +%Y%m%d-%m%S)
+
+# [网络配置]
 IPADDR=192.168.1.2
 NETMASK=225.255.255.0
 GATEWAY=192.168.1.1
 DNSIP=("223.5.5.5" "223.6.6.6")
 SSHPORT=20211
+
+# [用户设置]
 DefaultUser="WeiyiGeek"
 ROOTPASS=WeiyiGeek  # 密码建议12位以上且包含数字、大小写字母以及特殊字符。
 APPPASS=WeiyiGeek
+
+# [SNMP配置]
+SNMP_user=WeiyiGeek
+SNMP_group=testgroup
+SNMP_view=testview
+SNMP_password=dont_use_public
+SNMP_ip=127.0.0.1
+
+# [配置备份目录]
+BACKUPDIR=/var/log/.backups
+if [ ! -d ${BACKUPDIR} ];then  mkdir -vp ${BACKUPDIR}; fi
 
 
 ## 名称: err 、info 、warning
@@ -75,14 +95,14 @@ EOF
 chmod +x /opt/network.sh
 /opt/network.sh ${IPADDR} ${NETMASK} ${GATEWAY}
 
-
 # (2) 系统主机名与本地解析设置
 sudo hostnamectl set-hostname ${HOSTNAME} 
 # sed -i "s/127.0.1.1\s.\w.*$/127.0.1.1 ${NAME}/g" /etc/hosts
+cp -a /etc/hosts  ${BACKUPDIR}/hosts.bak
 grep -q "^\$(hostname -I)\s.\w.*$" /etc/hosts && sed -i "s/\$(hostname -I)\s.\w.*$/${IPADDR} ${HOSTNAME}" /etc/hosts || echo "${IPADDR} ${HOSTNAME}" >> /etc/hosts
 
 # (3) 系统DNS域名解析服务设置
-cp -a /etc/resolv.conf{,.bak}
+cp -a /etc/resolv.conf  ${BACKUPDIR}/resolv.conf.bak
 for dns in  ${DNSIP[@]};do echo "nameserver ${dns}" >> /etc/resolv.conf;done
 
 log::info "[*] network configure modifiy successful! restarting Network........."
@@ -96,6 +116,7 @@ service network restart && ip addr
 ## 参数: 无
 os::Software () {
   log::info "[-] 操作系统软件包管理及更新源配置相关脚本,开始执行....."
+  cp -a /etc/yum.repos.d/CentOS-Base.repo ${BACKUPDIR}/CentOS-Base.repo
 
 # (1) CentOS 软件仓库镜像源配置&&初始化更新
   log::info "[*] CentOS 软件仓库镜像源配置&&初始化更新 "
@@ -108,6 +129,7 @@ yum --exclude=kernel* update -y && yum upgrade -y &&  yum -y install epel*
 
 
 # (2) CentOS 操作系统内核升级(可选)
+  cp -a /etc/grub2.cfg ${BACKUPDIR}/grub2.cfg.kernelupdate.bak
   log::info "[*] CentOS 操作系统内核升级(可选) "
 rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
 yum -y install https://www.elrepo.org/elrepo-release-7.el7.elrepo.noarch.rpm
@@ -131,7 +153,7 @@ reboot
 yum install -y gcc gcc-c++ g++ make jq libpam-cracklib openssl-devel bzip2-devel
 # 常规软件
 yum install -y nano vim git unzip wget ntpdate dos2unix net-tools
-yum install -y tree htop ncdu nload sysstat psmisc bash-completion fail2ban chrony nfs-utils
+yum install -y tree htop ncdu nload sysstat psmisc bash-completion fail2ban nfs-utils chrony
 # 清空缓存和已下载安装的软件包
 yum clean all
 
@@ -148,7 +170,7 @@ os::TimedataZone() {
 # (1) 时区设置东8区
 log::info "[*] 时区设置前的时间: $(date -R) "
 timedatectl
-cp -a /etc/localtime{,.bak}
+cp -a /etc/localtime ${BACKUPDIR}/localtime.bak
 ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
 # (2) 时间同步软件安装
@@ -195,8 +217,6 @@ timedatectl
 os::Security () {
   log::info "[-] 操作系统安全加固配置(符合等保要求-三级要求)"
 
-# 相关修改文件备份
-cp /etc/login.defs{,.bak}; cp /etc/pam.d/password-auth{,.bak}; cp /etc/pam.d/system-auth{,.bak}; cp /etc/profile{,.bak}; cp /etc/ssh/sshd_config{,.bak}
 
 # (0) 系统用户及其终端核查配置
   log::info "[-] 锁定或者删除多余的系统账户以及创建低权限用户"
@@ -217,6 +237,7 @@ for i in $(cat /etc/passwd | cut -d ":" -f 1,7);do
     log::warning "${i} 非默认用户"
   fi
 done
+cp -a /etc/shadow ${BACKUPDIR}/'shadow-'${EXECTIME}.bak
 passwd -l adm&>/dev/null 2&>/dev/null; passwd -l daemon&>/dev/null 2&>/dev/null; passwd -l bin&>/dev/null 2&>/dev/null; passwd -l sys&>/dev/null 2&>/dev/null; passwd -l lp&>/dev/null 2&>/dev/null; passwd -l uucp&>/dev/null 2&>/dev/null; passwd -l nuucp&>/dev/null 2&>/dev/null; passwd -l smmsplp&>/dev/null 2&>/dev/null; passwd -l mail&>/dev/null 2&>/dev/null; passwd -l operator&>/dev/null 2&>/dev/null; passwd -l games&>/dev/null 2&>/dev/null; passwd -l gopher&>/dev/null 2&>/dev/null; passwd -l ftp&>/dev/null 2&>/dev/null; passwd -l nobody&>/dev/null 2&>/dev/null; passwd -l nobody4&>/dev/null 2&>/dev/null; passwd -l noaccess&>/dev/null 2&>/dev/null; passwd -l listen&>/dev/null 2&>/dev/null; passwd -l webservd&>/dev/null 2&>/dev/null; passwd -l rpm&>/dev/null 2&>/dev/null; passwd -l dbus&>/dev/null 2&>/dev/null; passwd -l avahi&>/dev/null 2&>/dev/null; passwd -l mailnull&>/dev/null 2&>/dev/null; passwd -l nscd&>/dev/null 2&>/dev/null; passwd -l vcsa&>/dev/null 2&>/dev/null; passwd -l rpc&>/dev/null 2&>/dev/null; passwd -l rpcuser&>/dev/null 2&>/dev/null; passwd -l nfs&>/dev/null 2&>/dev/null; passwd -l sshd&>/dev/null 2&>/dev/null; passwd -l pcap&>/dev/null 2&>/dev/null; passwd -l ntp&>/dev/null 2&>/dev/null; passwd -l haldaemon&>/dev/null 2&>/dev/null; passwd -l distcache&>/dev/null 2&>/dev/null; passwd -l webalizer&>/dev/null 2&>/dev/null; passwd -l squid&>/dev/null 2&>/dev/null; passwd -l xfs&>/dev/null 2&>/dev/null; passwd -l gdm&>/dev/null 2&>/dev/null; passwd -l sabayon&>/dev/null 2&>/dev/null; passwd -l named&>/dev/null 2&>/dev/null
 
 
@@ -235,6 +256,10 @@ chage -d 0 -m 0 -M 90 -W 15 app && passwd --expire app
 chage -d 0 -m 0 -M 90 -W 15 ${DefaultUser} && passwd --expire ${DefaultUser} 
 
 log::info "[-] 用户口令复杂性策略设置 (密码过期周期0~90、到期前15天提示、密码长度至少15、复杂度设置至少有一个大小写、数字、特殊字符、密码三次不能一样、尝试次数为三次)"
+# 相关修改文件备份
+cp /etc/login.defs ${BACKUPDIR}/login.defs.bak;
+cp /etc/pam.d/password-auth ${BACKUPDIR}/password-auth.bak
+cp /etc/pam.d/system-auth ${BACKUPDIR}/system-auth.bak
 egrep -q "^\s*PASS_MIN_DAYS\s+\S*(\s*#.*)?\s*$" /etc/login.defs && sed -ri "s/^(\s*)PASS_MIN_DAYS\s+\S*(\s*#.*)?\s*$/\PASS_MIN_DAYS  0/" /etc/login.defs || echo "PASS_MIN_DAYS  0" >> /etc/login.defs
 egrep -q "^\s*PASS_MAX_DAYS\s+\S*(\s*#.*)?\s*$" /etc/login.defs && sed -ri "s/^(\s*)PASS_MAX_DAYS\s+\S*(\s*#.*)?\s*$/\PASS_MAX_DAYS  90/" /etc/login.defs || echo "PASS_MAX_DAYS  90" >> /etc/login.defs
 egrep -q "^\s*PASS_WARN_AGE\s+\S*(\s*#.*)?\s*$" /etc/login.defs && sed -ri "s/^(\s*)PASS_WARN_AGE\s+\S*(\s*#.*)?\s*$/\PASS_WARN_AGE  15/" /etc/login.defs || echo "PASS_WARN_AGE  15" >> /etc/login.defs
@@ -247,42 +272,52 @@ egrep -q "^password\s.+pam_pwquality.so\s+\w+.*$" /etc/pam.d/system-auth && sed 
 egrep -q "^password\s.+pam_unix.so\s+\w+.*$" /etc/pam.d/system-auth && sed -ri '/^password\s.+pam_unix.so/{s/pam_unix.so\s+\w+.*$/pam_unix.so sha512 shadow nullok try_first_pass use_authtok remember=3/g;}' /etc/pam.d/system-auth
 
 log::info "[-] 存储用户密码的文件，其内容经过sha512加密，所以非常注意其权限"
+# 解决首次登录配置密码时提示"passwd: Authentication token manipulation error"
 touch /etc/security/opasswd && chown root:root /etc/security/opasswd && chmod 600 /etc/security/opasswd 
 
 
 # (3) 设置用户sudo权限以及重要目录和文件的新建默认权限
 log::info "[-] 用户sudo权限以及重要目录和文件的新建默认权限设置"
+cp /etc/sudoers ${BACKUPDIR}/sudoers.bak
 # 如CentOS安装时您创建的用户 WeiyiGeek 防止直接通过 sudo passwd 修改root密码(此时必须要求输入WeiyiGeek密码后才可修改root密码)
 # Tips: Sudo允许授权用户权限以另一个用户（通常是root用户）的身份运行程序, 
 # DefaultUser="weiyigeek"
 sed -i "/# Allows members of the/i ${DefaultUser} ALL=(ALL) PASSWD:ALL" /etc/sudoers
 
-log::info "[-] 配置用户 umask 为027 "
-egrep -q "^\s*umask\s+\w+.*$" /etc/profile && sed -ri "s/^\s*umask\s+\w+.*$/umask 027/" /etc/profile || echo "umask 027" >> /etc/profile
+# 此参数需要根据业务来定，否则在使用时候会出现某些权限不足导致程序安装报错
+log::info "[-] 配置用户 umask 为022 "
+cp -a /etc/profile ${BACKUPDIR}/profile
+egrep -q "^\s*umask\s+\w+.*$" /etc/profile && sed -ri "s/^\s*umask\s+\w+.*$/umask 022/" /etc/profile || echo "umask 022" >> /etc/profile 
 # log::info "[-] 设置用户目录创建默认权限, (初始为077比较严格)在未设置umask为027 则默认为077"
 # egrep -q "^\s*umask\s+\w+.*$" /etc/csh.login && sed -ri "s/^\s*umask\s+\w+.*$/umask 022/" /etc/csh.login || echo "umask 022" >> /etc/csh.login
 # egrep -q "^\s*umask\s+\w+.*$" /etc/csh.cshrc && sed -ri "s/^\s*umask\s+\w+.*$/umask 022/" /etc/csh.cshrc || echo "umask 022" >> /etc/csh.cshrc
 # egrep -q "^\s*(umask|UMASK)\s+\w+.*$" /etc/login.defs && sed -ri "s/^\s*(umask|UMASK)\s+\w+.*$/UMASK 027/" /etc/login.defs || echo "UMASK 027" >> /etc/login.defs
 
-log::info "[-] 设置或恢复重要目录和文件的权限"
-chmod 755 /etc; 
+log::info "[-] 设置或恢复重要目录和文件的权限(设置日志文件非全局可写)"
+chmod 600 ~/.ssh/authorized_keys;
+chmod 755 /etc;
 chmod 755 /etc/passwd; 
 chmod 755 /etc/shadow; 
 chmod 755 /etc/security; 
 chmod 644 /etc/group; 
 chmod 644 /etc/services; 
-chmod 750 /etc/rc*.d
-chmod 777 /tmp; 
-chmod 600 ~/.ssh/authorized_keys
+chmod 750 /etc/rc*.d;
+chmod 755 /var/log/messages;
+chmod 775 /var/log/spooler;
+chmod 775 /var/log/cron;
+chmod 775 /var/log/secure;
+chmod 775 /var/log/maillog;
+chmod 775 /var/log/mail&>/dev/null 2&>/dev/null; 
+chmod 775 /var/log/localmessages&>/dev/null 2&>/dev/null
 
 log::info "[-] 删除潜在威胁文件 "
 find / -maxdepth 3 -name hosts.equiv | xargs rm -rf
 find / -maxdepth 3 -name .netrc | xargs rm -rf
 find / -maxdepth 3 -name .rhosts | xargs rm -rf
 
-
 # (4) SSHD 服务安全加固设置以及网络登陆Banner设置
 log::info "[-] sshd 服务安全加固设置"
+cp /etc/ssh/sshd_config ${BACKUPDIR}/sshd_config.bak
 # 严格模式
 sudo egrep -q "^\s*StrictModes\s+.+$" /etc/ssh/sshd_config && sed -ri "s/^(#)?\s*StrictModes\s+.+$/StrictModes yes/" /etc/ssh/sshd_config || echo "StrictModes yes" >> /etc/ssh/sshd_config
 # 默认的监听端口更改
@@ -328,6 +363,9 @@ EOF
 
 # (5) 用户远程登录失败次数与终端超时设置 
 log::info "[-] 用户远程连续登录失败5次锁定帐号5分钟包括root账号"
+cp /etc/pam.d/sshd ${BACKUPDIR}/sshd.bak
+cp /etc/pam.d/login ${BACKUPDIR}/login.bak
+
 # 远程登陆
 sed -ri "/^\s*auth\s+required\s+pam_tally2.so\s+.+(\s*#.*)?\s*$/d" /etc/pam.d/sshd 
 sed -ri '2a auth required pam_tally2.so deny=5 unlock_time=300 even_deny_root root_unlock_time=300' /etc/pam.d/sshd 
@@ -342,10 +380,12 @@ egrep -q "^\s*.*ClientAliveInterval\s\w+.*$" /etc/ssh/sshd_config && sed -ri "s/
 
 # (6) 切换用户日志记录和切换命令更改名称为SU
 log::info "[-] 切换用户日志记录和切换命令更改名称为SU "
+cp -a /etc/rsyslog.conf  ${BACKUPDIR}/'rsyslog.conf-'${EXECTIME}.bak
+egrep -q "^\s*authpriv\.\*\s+.+$" /etc/rsyslog.conf && sed -ri "s/^\s*authpriv\.\*\s+.+$/authpriv.*  \/var\/log\/secure/" /etc/rsyslog.conf || echo "authpriv.*  /var/log/secure" >> /etc/rsyslog.conf
 egrep -q "^(\s*)SULOG_FILE\s+\S*(\s*#.*)?\s*$" /etc/login.defs && sed -ri "s/^(\s*)SULOG_FILE\s+\S*(\s*#.*)?\s*$/\SULOG_FILE  \/var\/log\/.history\/sulog/" /etc/login.defs || echo "SULOG_FILE  /var/log/.history/sulog" >> /etc/login.defs
 egrep -q "^\s*SU_NAME\s+\S*(\s*#.*)?\s*$" /etc/login.defs && sed -ri "s/^(\s*)SU_NAME\s+\S*(\s*#.*)?\s*$/\SU_NAME  SU/" /etc/login.defs || echo "SU_NAME  SU" >> /etc/login.defs
-mkdir -vp /var/log/.backups /usr/local/bin /var/log/.history
-cp /usr/bin/su /var/.backups/su.bak
+mkdir -vp /usr/local/bin /var/log/.history
+cp /usr/bin/su ${BACKUPDIR}/su.bak
 mv /usr/bin/su /usr/bin/SU
 chmod 777 /var/log/.history 
 
@@ -368,10 +408,10 @@ EOF
 
 
 # (8) GRUB 安全设置
-log::info "[-] 系统 GRUB 安全设置(防止物理接触从grub菜单中修改密码) "
+  log::info "[-] 系统 GRUB 安全设置(防止物理接触从grub菜单中修改密码) "
 # Grub 关键文件备份
-cp -a /etc/grub.d/00_header /var/log/.backups 
-cp -a /etc/grub.d/10_linux /var/log/.backups 
+cp -a /etc/grub.d/00_header ${BACKUPDIR}/'00_header'${EXECTIME}.bak
+cp -a /etc/grub.d/10_linux ${BACKUPDIR}/'10_linux'${EXECTIME}.bak
 # 设置Grub菜单界面显示时间
 sed -i -e 's|set timeout_style=${style}|#set timeout_style=${style}|g' -e 's|set timeout=${timeout}|set timeout=3|g' /etc/grub.d/00_header
 # sed -i -e 's|GRUB_TIMEOUT_STYLE=hidden|#GRUB_TIMEOUT_STYLE=hidden|g' -e 's|GRUB_TIMEOUT=0|GRUB_TIMEOUT=3|g' /etc/default/grub
@@ -399,10 +439,33 @@ sed -i '/echo "$os" | grub_quote/ { s/menuentry /menuentry --unrestricted /;}' /
 grub2-mkconfig -o /boot/grub2/grub.cfg
 
 
-# (9) 关闭CentOS服务器中 SELINUX 以及防火墙端口放行
-log::info "[-] SELINUX 禁用以及系统防火墙规则设置 "
+# (9) 记录安全事件日志
+  log::info "[-] 记录安全事件日志"
+touch /var/log/.history/adm&>/dev/null; chmod 755 /var/log/.history/adm
+semanage fcontext -a -t security_t '/var/log/.history/adm'
+restorecon -v '/var/log/.history/adm'&>/dev/null
+egrep -q "^\s*\*\.err;kern.debug;daemon.notice\s+.+$" /etc/rsyslog.conf && sed -ri "s/^\s*\*\.err;kern.debug;daemon.notice\s+.+$/*.err;kern.debug;daemon.notice  \/var\/log\/.history\/adm/" /etc/rsyslog.conf || echo "*.err;kern.debug;daemon.notice  /var/log/.history/adm" >> /etc/rsyslog.conf
+
+
+# (10) 配置自动屏幕锁定（适用于具备图形界面的设备）, 非图形界面不需要执行
+  log::info "[-] 对于有图形界面的系统配置10分钟屏幕锁定"
+# gconftool-2 --direct \
+# --config-source xml:readwrite:/etc/gconf/gconf.xml.mandatory \
+# --type bool \
+# --set /apps/gnome-screensaver/idle_activation_enabled true \
+# --set /apps/gnome-screensaver/lock_enabled true \
+# --type int \
+# --set /apps/gnome-screensaver/idle_delay 10 \
+# --type string \
+# --set /apps/gnome-screensaver/mode blank-only
+
+
+# (10) 关闭CentOS服务器中 SELINUX 以及防火墙端口放行
+  log::info "[-] SELINUX 禁用以及系统防火墙规则设置 "
 sed -i "s/SELINUX=enforcing/SELINUX=disabled/g" /etc/selinux/config 
-firewall-cmd --zone=public --add-port=20211/tcp --permanent && firewall-cmd --reload
+firewall-cmd --zone=public --add-port=20211/tcp --permanent
+firewall-cmd --zone=public --add-port=161/udp --permanent
+firewall-cmd --reload
 systemctl restart sshd
 reboot
 }
@@ -412,10 +475,14 @@ reboot
 ## 用途: 操作系统安全运维设置相关脚本
 ## 参数: 无
 os::Operation () {
-log::info "[-] 操作系统安全运维设置相关脚本"
+  log::info "[-] 操作系统安全运维设置相关脚本"
+
+# (0) 禁用ctrl+alt+del组合键对系统重启 (必须要配置,我曾入过坑)
+ log::info "[-] 禁用控制台ctrl+alt+del组合键重启"
+mv /usr/lib/systemd/system/ctrl-alt-del.target ${BACKUPDIR}/'ctrl-alt-del.target-'${EXECTIME}.bak
 
 # (1) 设置文件删除回收站别名
-log::info "[-] 设置文件删除回收站别名(防止误删文件) "
+  log::info "[-] 设置文件删除回收站别名(防止误删文件) "
 sudo tee -a  /etc/profile.d/alias.sh <<'EOF'
 # User specific aliases and functions
 # 删除回收站
@@ -447,6 +514,63 @@ EOF
 sudo chmod +775 /usr/local/bin/remove.sh /etc/profile.d/alias.sh /etc/profile.d/history-record.sh
 sudo chmod a+x /usr/local/bin/remove.sh /etc/profile.d/alias.sh /etc/profile.d/history-record.sh
 source /etc/profile.d/alias.sh  /etc/profile.d/history-record.sh
+
+}
+
+
+
+## 名称: os::DisableService
+## 用途: 禁用与设置操作系统中某些服务(需要根据实际环境进行)
+## 参数: 无
+os::DisableService () {
+  log::info "[-] 禁用操作系统中某些服务(需要根据实际环境进行配置)"
+
+  log::info "[-] 配置禁用telnet服务"
+cp /etc/services ${BACKUPDIR}/'services-'${EXECTIME}.bak
+egrep -q "^\s*telnet\s+\d*.+$" /etc/services && sed -ri "/^\s*telnet\s+\d*.+$/s/^/# /" /etc/services
+
+  log::info "[-] 禁止匿名与root用户用户登录FTP"
+if [ -f /etc/vsftpd/vsftpd.conf ];then
+cp /etc/vsftpd/vsftpd.conf /etc/vsftpd/'vsftpd.conf-'`date +%Y%m%d`.bak
+systemctl list-unit-files|grep vsftpd > /dev/null && sed -ri "/^\s*anonymous_enable\s*\W+.+$/s/^/#/" /etc/vsftpd/vsftpd.conf && echo "anonymous_enable=NO" >> /etc/vsftpd/vsftpd.conf
+systemctl list-unit-files|grep vsftpd > /dev/null && echo "root" >> /etc/vsftpd/ftpusers
+  log::info "[-] 限制FTP用户上传的文件所具有的权限"
+systemctl list-unit-files|grep vsftpd > /dev/null && sed -ri "/^\s*write_enable\s*\W+.+$/s/^/#/" /etc/vsftpd/vsftpd.conf && echo "write_enable=NO" >> /etc/vsftpd/vsftpd.conf
+systemctl list-unit-files|grep vsftpd > /dev/null && sed -ri "/^\s*ls_recurse_enable\s*\W+.+$/s/^/#/" /etc/vsftpd/vsftpd.conf && echo "ls_recurse_enable=NO" >> /etc/vsftpd/vsftpd.conf
+systemctl list-unit-files|grep vsftpd > /dev/null && sed -ri "/^\s*anon_umask\s*\W+.+$/s/^/#/" /etc/vsftpd/vsftpd.conf && echo "anon_umask=077" >> /etc/vsftpd/vsftpd.conf
+systemctl list-unit-files|grep vsftpd > /dev/null && sed -ri "/^\s*local_umask\s*\W+.+$/s/^/#/" /etc/vsftpd/vsftpd.conf && echo "local_umask=022" >> /etc/vsftpd/vsftpd.conf
+  log::info "[-] 限制FTP用户登录后能访问的目录"
+systemctl list-unit-files|grep vsftpd > /dev/null && sed -ri "/^\s*chroot_local_user\s*\W+.+$/s/^/#/" /etc/vsftpd/vsftpd.conf && echo "chroot_local_user=NO" >> /etc/vsftpd/vsftpd.conf
+  log::info "[-] FTP Banner 设置"
+systemctl list-unit-files|grep vsftpd > /dev/null && sed -ri "/^\s*ftpd_banner\s*\W+.+$/s/^/#/" /etc/vsftpd/vsftpd.conf && echo "ftpd_banner='Authorized only. All activity will be monitored and reported.'" >> /etc/vsftpd/vsftpd.conf
+
+  log::info "[-] 限制不必要的服务 (根据实际环境配置)"
+# systemctl disable rsh&>/dev/null 2&>/dev/null;systemctl disable talk&>/dev/null 2&>/dev/null;systemctl disable telnet&>/dev/null 2&>/dev/null;systemctl disable tftp&>/dev/null 2&>/dev/null;systemctl disable rsync&>/dev/null 2&>/dev/null;systemctl disable xinetd&>/dev/null 2&>/dev/null;systemctl disable nfs&>/dev/null 2&>/dev/null;systemctl disable nfslock&>/dev/null 2&>/dev/null
+fi
+
+  log::info "[-] 配置SNMP默认团体字"
+if [ -f /etc/snmp/snmpd.conf ];then
+cp /etc/snmp/snmpd.conf ${BACKUPDIR}/'snmpd.conf-'${EXECTIME}.bak
+cat > /etc/snmp/snmpd.conf <<EOF
+com2sec $SNMP_user  default    $SNMP_password   
+group   $SNMP_group         v1           $SNMP_user
+group   $SNMP_group         v2c          $SNMP_user
+view    systemview      included        .1                      80
+view    systemview      included        .1.3.6.1.2.1.1
+view    systemview      included        .1.3.6.1.2.1.25.1.1
+view    $SNMP_view        included        .1.3.6.1.4.1.2021.80
+access  $SNMP_group         ""      any       noauth    exact  systemview none none
+access  $SNMP_group         ""      any       noauth    exact  $SNMP_view   none none
+dontLogTCPWrappersConnects yes
+trapcommunity $SNMP_password
+authtrapenable 1
+trap2sink $SNMP_ip
+agentSecName $SNMP_user
+rouser $SNMP_user
+defaultMonitors yes
+linkUpDownNotifications yes
+EOF
+fi
 }
 
 

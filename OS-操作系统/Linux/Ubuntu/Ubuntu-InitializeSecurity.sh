@@ -2,16 +2,18 @@
 # @Author: WeiyiGeek
 # @Description: Ubuntu TLS Security Initiate
 # @Create Time:  2019年9月1日 16:43:33
-# @Last Modified time: 2020-03-16 11:06:31
+# @Last Modified time: 2021-11-15 11:06:31
 # @E-mail: master@weiyigeek.top
 # @Blog: https://www.weiyigeek.top
-# @Version: 3.1
+# @wechat: WeiyiGeeker
+# @Github: https://github.com/WeiyiGeek/SecOpsDev/tree/master/OS-操作系统/Linux/
+# @Version: 3.2
 #-------------------------------------------------#
 # 脚本主要功能说明:
 # (1) Ubuntu 系统初始化操作包括IP地址设置、基础软件包更新以及安装加固。
 # (2) Ubuntu 系统容器以及JDK相关环境安装。
 # (3) Ubuntu 系统中异常错误日志解决。
-# (4) V3.2 优化更新现有脚本若干。
+# (4) Ubuntu 系统常规服务安装配置，加入数据备份目录。
 #-------------------------------------------------#
 
 ## 系统全局变量定义
@@ -142,7 +144,7 @@ rtcsync
 # 允许跳跃式校时 如果在前 3 次校时中时间差大于 1.0s
 makestep 1 3
 EOF
-systemctl enable chrony && systemctl restart chrony && systemctl status chrony -l
+systemctl enable chronyd && systemctl restart chronyd && systemctl status chronyd -l
 
 # 方式2
 # sudo ntpdate 192.168.10.254 || sudo ntpdate 192.168.12.215 || sudo ntpdate ntp1.aliyun.com
@@ -202,6 +204,7 @@ for i in $(cat /etc/passwd | cut -d ":" -f 1,7);do
     log::warning "${i} 非默认用户"
   fi
 done
+cp /etc/shadow /etc/'shadow-'`date +%Y%m%d`.bak
 passwd -l adm&>/dev/null 2&>/dev/null; passwd -l daemon&>/dev/null 2&>/dev/null; passwd -l bin&>/dev/null 2&>/dev/null; passwd -l sys&>/dev/null 2&>/dev/null; passwd -l lp&>/dev/null 2&>/dev/null; passwd -l uucp&>/dev/null 2&>/dev/null; passwd -l nuucp&>/dev/null 2&>/dev/null; passwd -l smmsplp&>/dev/null 2&>/dev/null; passwd -l mail&>/dev/null 2&>/dev/null; passwd -l operator&>/dev/null 2&>/dev/null; passwd -l games&>/dev/null 2&>/dev/null; passwd -l gopher&>/dev/null 2&>/dev/null; passwd -l ftp&>/dev/null 2&>/dev/null; passwd -l nobody&>/dev/null 2&>/dev/null; passwd -l nobody4&>/dev/null 2&>/dev/null; passwd -l noaccess&>/dev/null 2&>/dev/null; passwd -l listen&>/dev/null 2&>/dev/null; passwd -l webservd&>/dev/null 2&>/dev/null; passwd -l rpm&>/dev/null 2&>/dev/null; passwd -l dbus&>/dev/null 2&>/dev/null; passwd -l avahi&>/dev/null 2&>/dev/null; passwd -l mailnull&>/dev/null 2&>/dev/null; passwd -l nscd&>/dev/null 2&>/dev/null; passwd -l vcsa&>/dev/null 2&>/dev/null; passwd -l rpc&>/dev/null 2&>/dev/null; passwd -l rpcuser&>/dev/null 2&>/dev/null; passwd -l nfs&>/dev/null 2&>/dev/null; passwd -l sshd&>/dev/null 2&>/dev/null; passwd -l pcap&>/dev/null 2&>/dev/null; passwd -l ntp&>/dev/null 2&>/dev/null; passwd -l haldaemon&>/dev/null 2&>/dev/null; passwd -l distcache&>/dev/null 2&>/dev/null; passwd -l webalizer&>/dev/null 2&>/dev/null; passwd -l squid&>/dev/null 2&>/dev/null; passwd -l xfs&>/dev/null 2&>/dev/null; passwd -l gdm&>/dev/null 2&>/dev/null; passwd -l sabayon&>/dev/null 2&>/dev/null; passwd -l named&>/dev/null 2&>/dev/null
 
 # (2) 用户密码设置和口令策略设置
@@ -388,7 +391,6 @@ systemctl enable ufw.service && systemctl start ufw.service && ufw enable
 sudo ufw allow proto tcp to any port 20211
 # 重启修改配置相关服务
 systemctl restart sshd
-
 }
 
 
@@ -397,10 +399,14 @@ systemctl restart sshd
 ## 用途: 操作系统安全运维设置
 ## 参数: 无
 os::Operation () {
-log::info "[-] 操作系统安全运维设置相关脚本"
+  log::info "[-] 操作系统安全运维设置相关脚本"
+
+# (0) 禁用ctrl+alt+del组合键对系统重启 (必须要配置,我曾入过坑)
+  log::info "[-] 禁用控制台ctrl+alt+del组合键重启"
+mv /usr/lib/systemd/system/ctrl-alt-del.target ${BACKUPDIR}/'ctrl-alt-del.target-'${EXECTIME}.bak
 
 # (1) 设置文件删除回收站别名
-log::info "[-] 设置文件删除回收站别名(防止误删文件) "
+  log::info "[-] 设置文件删除回收站别名(防止误删文件) "
 sudo tee -a  /etc/profile.d/alias.sh <<'EOF'
 # User specific aliases and functions
 # 删除回收站
@@ -432,6 +438,7 @@ EOF
 sudo chmod +775 /usr/local/bin/remove.sh /etc/profile.d/alias.sh /etc/profile.d/history-record.sh
 sudo chmod a+x /usr/local/bin/remove.sh /etc/profile.d/alias.sh /etc/profile.d/history-record.sh
 source /etc/profile.d/alias.sh  /etc/profile.d/history-record.sh
+
 
 # (2) 解决普通定时任务无法后台定时执行
 log::info "[-] 解决普通定时任务无法后台定时执行 "
