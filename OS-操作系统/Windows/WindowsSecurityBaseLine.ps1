@@ -1,50 +1,101 @@
 #######################################################
-# - Author : WeiyiGeek
-# - Description: Windows Server安全配置策略基线检测脚本
-# - Version: v1.1
-# - Time: 2021年5月20日 10点53分
-# - Mail: Master@weiyigeek.top
-# - wechat: WeiyiGeeker
+# @Author: WeiyiGeek
+# @Description:  Windows Server 安全配置策略基线检测脚本
+# @Create Time:  2019年5月6日 11:04:42
+# @Last Modified time: 2021-11-15 11:06:31
+# @E-mail: master@weiyigeek.top
+# @Blog: https://www.weiyigeek.top
+# @wechat: WeiyiGeeker
+# @Github: https://github.com/WeiyiGeek/SecOpsDev/tree/master/OS-操作系统/Windows/
+# @Version: 1.8
+# @Runtime: Server 2019 / Windows 10
 #######################################################
+
+
 <#
-	.SYNOPSIS
-	检查密码策略是否符合预定策略
-	.DESCRIPTION
-	预定策略：
-		密码历史：5
-		密码最长使用期限：90
-		密码最短使用期限：1
-		密码复杂度是否开启：1开启
-		是否以可还原的方式加密存储密码：0否
-		密码最小长度：8位
-	.EXAMPLE
-	Check-PasswordPolicy secInfoArray
-	.NOTES
-	General notes
+.SYNOPSIS
+Windows Server 安全配置策略基线检测脚本 （脚本将会在Github上持续更新）
+
+.DESCRIPTION
+Windows Server 操作系统配置策略核查 (符合等保3级的关键检查项)
+
+.EXAMPLE
+WindowsSecurityBaseLine.ps1 -Executor WeiyiGeek -MsrcUpdate False
+
+.NOTES
+注意:不同的版本操作系统以下某些关键项可能会不存在会有一些警告(需要大家提交issue，共同完成)。
 #>
+
 # * PowerShell 脚本执行参数
+# Executor : 脚本执行者
+# MsrcUpdate : 是否在线拉取微软安全中心的服务器安全补丁列表信息(建议一台主机拉取好之后将WSUSList.json和WSUSListId.json拷贝到当前脚本同级目录下)
 [Cmdletbinding()]
 param(
   [Parameter(Mandatory=$true)][String]$Executor,
-  [Boolean]$Update
+  [Boolean]$MsrcUpdate
 )
 
 # * 文件输出默认为UTF-8格式
 $PSDefaultParameterValues['Out-File:Encoding'] = 'utf8'
-
-# * 关键项:系统策略配置文件拉取 *
-secedit /export /cfg config.cfg /quiet
-start-sleep 3
-$Config = Get-Content -path config.cfg
-$ScanTime = Get-date -Format 'yyyy-M-d H:m:s'
-
 
 
 ################################################################################################################################
 # **********************#
 # * 全局公用工具依赖函数  *  
 # **********************#
+Function F_IsCurrentUserAdmin
+{ 
+<#
+.SYNOPSIS
+F_IsCurrentUserAdmin 函数：全局公用工具依赖。
+.DESCRIPTION
+判断当前运行的powershell终端是否管理员执行,返回值 true 或者 false
+.EXAMPLE
+F_IsCurrentUserAdmin
+#>
+  $user = [Security.Principal.WindowsIdentity]::GetCurrent(); 
+  (New-Object Security.Principal.WindowsPrincipal $user).IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator) 
+} 
+
+function F_Logging {
+<#
+.SYNOPSIS
+F_Logging 日志输出函数
+.DESCRIPTION
+用于输出脚本执行结果并按照不同的日志等级输出显示到客户终端上。
+.EXAMPLE
+F_Logging -Level [Info|Warning|Error] -Msg "测试输出字符串"
+#>
+  param (
+    [Parameter(Mandatory=$true)]$Msg,
+    [ValidateSet("Info","Warning","Error")]$Level
+  )
+
+  switch ($Level) {
+    Info { 
+      Write-Host "[INFO] ${Msg}" -ForegroundColor Green;
+    }
+    Warning {
+      Write-Host "[WARN] ${Msg}" -ForegroundColor Yellow;
+    }
+    Error { 
+      Write-Host "[ERROR] ${Msg}" -ForegroundColor Red;
+    }
+    Default {
+      Write-Host "[*] F_Logging 日志 Level 等级错误`n Useage： F_Logging -Level [Info|Warning|Error] -Msg '测试输出字符串'" -ForegroundColor Red;
+    }
+  }
+}
+
 function F_Tools {
+<#
+.SYNOPSIS
+F_Tools 检测对比函数
+.DESCRIPTION
+验证判断传入的字段是否与安全加固字段一致
+.EXAMPLE
+F_Tools -Key "ItemDemo" -Value "2" -Operator "eq" -DefaultValue "1"  -Msg "对比ItemDemo字段值与预设值"
+#>
   param (
     [Parameter(Mandatory=$true)][String]$Key,
     [Parameter(Mandatory=$true)]$Value,
@@ -132,8 +183,6 @@ Function F_UrlRequest {
 }
 
 ################################################################################################################################
-
-
 #
 # * 操作系统基础信息记录函数 * #
 #
@@ -180,7 +229,7 @@ Function F_SysInfo {
     $SysInfo += @{"ComputerType"="物理机 - $($ComputerType.Model)"}
   }
   
-  # # - 当前计算机温度值信息记录
+  # # - 当前计算机温度值信息记录 （WINDOWSERVER2019支持）
   # Get-CimInstance -Namespace ROOT/WMI -Class MSAcpi_ThermalZoneTemperature | % { 
   #   $currentTempKelvin = $_.CurrentTemperature / 10 
   #   $currentTempCelsius = $currentTempKelvin - 273.15 
@@ -227,7 +276,6 @@ function F_SysDisk {
     $Total = [Math]::Ceiling($Free + $Used)
     $SysDisk += @{"FileSystem::$($_.Name)"="$($_.Name) | Free: $($Free) GB | Used: $($Used) GB | Total: $($Total) GB"}
   }
-
   return $SysDisk
 }
 
@@ -261,7 +309,7 @@ $SysAccountPolicy = @{
   # + 密码最长留存期
   "MaximumPasswordAge" = @{operator="le";value=90;msg="密码最长留存期"}
   # + 密码长度最小值
-  "MinimumPasswordLength" = @{operator="ge";value=12;msg="密码长度最小值"}
+  "MinimumPasswordLength" = @{operator="ge";value=14;msg="密码长度最小值"}
   # + 密码必须符合复杂性要求
   "PasswordComplexity" = @{operator="eq";value=1;msg="密码必须符合复杂性要求策略"}
   # + 强制密码历史 N个记住的密码
@@ -277,9 +325,9 @@ $SysAccountPolicy = @{
   # + 强制过期
   "ForceLogoffWhenHourExpire" = @{operator="eq";value=0;msg="强制过期"}
   # + 当前管理账号登陆名称
-  "NewAdministratorName" = @{operator="ne";value='"Administrator"';msg="当前系统管理账号登陆名称策略"}
+  "NewAdministratorName" = @{operator="ne";value='"Administrator"';msg="当前系统默认管理账号登陆名称策略"}
   # + 当前来宾用户登陆名称
-  "NewGuestName" = @{operator="ne";value='"Guest"';msg="当前系统来宾用户登陆名称策略"}
+  "NewGuestName" = @{operator="ne";value='"Guest"';msg="当前系统默认来宾用户登陆名称策略"}
   # + 管理员是否被启用
   "EnableAdminAccount" = @{operator="eq";value=1;msg="管理员账户停用与启用策略"}
   # + 来宾用户是否启用
@@ -346,7 +394,6 @@ function F_SysEventAuditPolicy {
   return $SysEventAuditPolicy['CheckResults']
 }
 
-
 #
 # * 操作系统用户权限管理策略检查  * #
 #
@@ -375,7 +422,6 @@ Function F_SysUserPrivilegePolicy {
   return $SysUserPrivilegePolicy['CheckResults']
 }
 
-
 #
 # * 操作系统策略组安全选项权限配置检查 * #
 # 
@@ -399,7 +445,7 @@ $SysSecurityOptionPolicy = @{
   # - 交互式登录: 试图登录的用户的消息标题
   LegalNoticeCaption = @{operator="eq";value='MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\LegalNoticeCaption=1,"安全登陆"';msg="交互式登录: 试图登录的用户的消息标题"}
   # - 交互式登录: 试图登录的用户的消息文本
-  LegalNoticeText = @{operator="eq";value='MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\LegalNoticeText=7,请谨慎的操作数据';msg="交互式登录: 试图登录的用户的消息文本"}
+  LegalNoticeText = @{operator="eq";value='MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\LegalNoticeText=7,请谨慎的操作服务器中数据,您所有操作将被记录审计';msg="交互式登录: 试图登录的用户的消息文本"}
   
   # - Microsoft网络客户端: 将未加密的密码发送到第三方 SMB 服务器(禁用)
   EnablePlainTextPassword = @{operator="eq";value="MACHINE\System\CurrentControlSet\Services\LanmanWorkstation\Parameters\EnablePlainTextPassword=4,0";msg="Microsoft网络客户端-将未加密的密码发送到第三方 SMB 服务器(禁用)"}
@@ -443,23 +489,36 @@ Function F_SysSecurityOptionPolicy {
 #
 # - 注册表相关安全策略  -
 $SysRegistryPolicy = @{
-# + 禁止全部驱动器自动播放
-NoDriveTypeAutoRun = @{name="NoDriveTypeAutoRun";operator="eq";value=233;regname="HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer";msg="系统基配核查-禁止全部驱动器自动播放"}
 # + 屏幕自动保护程序
-ScreenSaveActive = @{name="ScreenSaveActive";operator="eq";value=1;regname="HKEY_CURRENT_USER\Control Panel\Desktop";msg="系统基配核查-屏幕自动保护程序策略"}
+ScreenSaveActive = @{regname="HKEY_CURRENT_USER\Control Panel\Desktop";name="ScreenSaveActive";operator="eq";value=1;msg="系统基配核查-屏幕自动保护程序策略"}
 # + 屏幕恢复时使用密码保护
-ScreenSaverIsSecure = @{name="ScreenSaverIsSecure";operator="eq";value=1;regname="HKEY_CURRENT_USER\Control Panel\Desktop";msg="系统基配核查-屏幕恢复时使用密码保护策略"}
+ScreenSaverIsSecure = @{regname="HKEY_CURRENT_USER\Control Panel\Desktop";name="ScreenSaverIsSecure";operator="eq";value=1;msg="系统基配核查-屏幕恢复时使用密码保护策略"}
 # + 屏幕保护程序启动时间
-ScreenSaveTimeOut = @{name="ScreenSaveTimeOut";operator="le";value=600;regname="HKEY_CURRENT_USER\Control Panel\Desktop";msg="系统基配核查-屏幕保护程序启动时间策略"}
+ScreenSaveTimeOut = @{regname="HKEY_CURRENT_USER\Control Panel\Desktop";name="ScreenSaveTimeOut";operator="le";value=600;msg="系统基配核查-屏幕保护程序启动时间策略"}
+
+# + 禁止全部驱动器自动播放
+DisableAutoplay  = @{regname="HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer";name="DisableAutoplay";regtype="DWord";operator="eq";value=1;msg="禁止全部驱动器自动播放"}
+NoDriveTypeAutoRun = @{regname="HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer";name="NoDriveTypeAutoRun";regtype="DWord";operator="eq";value=255;msg="禁止全部驱动器自动播放"}
 
 # - 检查关闭默认共享盘
-restrictanonymous = @{name="restrictanonymous";operator="eq";value=1;regname="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa";msg="系统网络基配核查-关闭默认共享盘策略"}
+restrictanonymous = @{regname="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa";name="restrictanonymous";operator="eq";value=1;msg="系统网络基配核查-关闭默认共享盘策略"}
+restrictanonymoussam = @{regname="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa";name="restrictanonymoussam";regtype="DWord";operator="eq";value=1;msg="不允许SAM账户的匿名枚举值为(启用)"}
 
-# - 系统、应用、安全、PS日志查看器大小设置
-EventlogSystemMaxSize = @{name="MaxSize";operator="ge";value=20971520;regname="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Eventlog\System";msg="系统基日志配核查-系统日志查看器大小设置策略"}
-EventlogApplicationMaxSize = @{name="MaxSize";operator="ge";value=20971520;regname="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Eventlog\Application";msg="系统日志基配核查-应用日志查看器大小设置策略"}
-EventlogSecurityMaxSize = @{name="MaxSize";operator="ge";value=20971520;regname="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Eventlog\Security";msg="系统日志基配核查-安全日志查看器大小设置策略"}
-EventlogPSMaxSize = @{name="MaxSize";operator="ge";value=15728640;regname="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Eventlog\Windows PowerShell";msg="系统日志基配核查-PS日志查看器大小设置策略"}
+# - 禁用磁盘共享(SMB)
+AutoShareWks = @{regname="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\lanmanserver\parameters";name="AutoShareWks";regtype="DWord";operator="eq";value=0;msg="关闭禁用默认共享策略-Server2012"}
+AutoShareServer = @{regname="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\lanmanserver\parameters";name="AutoShareServer";regtype="DWord";operator="eq";value=0;msg="关闭禁用默认共享策略-Server2012"}
+
+# - 系统、应用、安全、PS日志查看器大小设置(此处设置默认的两倍配置-建议一定通过日志采集平台采集系统日志比如ELK)
+EventlogSystemMaxSize = @{regname="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Eventlog\System";name="MaxSize";operator="ge";value=41943040;msg="系统基日志配核查-系统日志查看器大小设置策略"}
+EventlogApplicationMaxSize = @{regname="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Eventlog\Application";name="MaxSize";operator="ge";value=41943040;msg="系统日志基配核查-应用日志查看器大小设置策略"}
+EventlogSecurityMaxSize = @{regname="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Eventlog\Security";name="MaxSize";operator="ge";value=41943040;msg="系统日志基配核查-安全日志查看器大小设置策略"}
+EventlogPSMaxSize = @{regname="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Eventlog\Windows PowerShell";name="MaxSize";operator="ge";value=31457280;msg="系统日志基配核查-PS日志查看器大小设置策略"}
+
+# - 防火墙相关操作设置（开启、协议、服务）
+DomainEnableFirewall  = @{regname='HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\DomainProfile';name='EnableFirewall';regtype="DWord";operator="eq";value=1;msg="开启域网络防火墙"}
+StandardEnableFirewall = @{regname='HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\services\SharedAccess\Parameters\FirewallPolicy\StandardProfile';name='EnableFirewall';regtype="DWord";operator="eq";value=1;msg="开启专用网络防火墙"}
+PPEnableFirewall = @{regname='HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\services\SharedAccess\Parameters\FirewallPolicy\PublicProfile';name='EnableFirewall';regtype="DWord";operator="eq";value=1;msg="开启公用网络防火墙"}
+
 
 # - 结果存储
 CheckResults=@()
@@ -539,8 +598,9 @@ $SysWSUSList = @{}
 $SysWSUSListId = @()
 $AvailableWSUSList = @{}
 function F_SysSecurityPolicy {
+
   # - 系统补丁验证
-  if ( $Update -or ! (Test-Path -Path .\WSUSList.json) ) {
+  if ( $MsrcUpdate -or ! (Test-Path -Path .\WSUSList.json) ) {
     $MSRC_JSON = F_UrlRequest -Msrc_api $Msrc_api
     $MSRC_JSON.value | % { 
       $id = $_.id;
@@ -650,23 +710,67 @@ function F_OtherCheckPolicy {
 }
 
 
-Write-Host "Job 执行人: $($Executor)  `n扫描开始时间: $($ScanTime) `n[-] 当前系统信息一览" -ForegroundColor Green
+function Main() {
+<#
+.SYNOPSIS
+main 函数程序执行入口
+.DESCRIPTION
+调用上述编写的相关检测脚本
+.EXAMPLE
+main
+#>
+
+$ScanStartTime = Get-date -Format 'yyyy-M-d H:m:s'
+F_Logging -Level Info -Msg "#################################################################################"
+F_Logging -Level Info -Msg "- @Desc: Windows Server 安全配置策略基线检测脚本  [将会在Github上持续更新-star]"
+F_Logging -Level Info -Msg "- @Author: WeiyiGeek"
+F_Logging -Level Info -Msg "- @Blog: https://www.weiyigeek.top"
+F_Logging -Level Info -Msg "- @Github: https://github.com/WeiyiGeek/SecOpsDev/tree/master/OS-操作系统/Windows"
+F_Logging -Level Info -Msg "#################################################################################`n"
+
+F_Logging -Level Info -Msg "[*] Windows Server 安全配置策略基线检测脚本已启动."
+F_Logging -Level Info -Msg "[*] 脚本执行: $($Executor), 是否在线拉取微软安全中心的服务器安全补丁列表信息: $($MsrcUpdate)`n"
+# 1.判断当前运行的powershell终端是否管理员执行
+F_Logging -Level Info -Msg "[-] 正在检测当前运行的PowerShell终端是否管理员权限...`n"
+$flag = F_IsCurrentUserAdmin
+if (!($flag)) {
+  F_Logging -Level Error -Msg "[*] 脚本执行发生错误,请使用管理员权限运行该脚本..例如: Start-Process powershell -Verb runAs...."
+  F_Logging -Level Warning -Msg "[*] 正在退出执行该脚本......"
+  return
+}
+F_Logging -Level Info -Msg "[*] PowerShell 管理员权限检查通过...`n"
+
+# 2.当前系统策略配置文件导出 (注意必须系统管理员权限运行) 
+F_Logging -Level Info -Msg "[-] 正在导出当前系统策略配置文件 config.cfg......`n"
+secedit /export /cfg config.cfg /quiet
+start-sleep 3
+if ( -not(Test-Path -Path config.cfg)) {
+  F_Logging -Level Error -Msg "[*] 当前系统策略配置文件 config.cfg 不存在,请检查......`n"
+  F_Logging -Level Warning -Msg "[*] 正在退出执行该脚本......"
+  return
+} else { 
+  Copy-Item -Path config.cfg -Destination config.cfg.bak -Force
+}
+$Config = Get-Content -path config.cfg
+
+# 3.系统相关信息以及系统安全组策略检测
+F_Logging -Level Info -Msg "[-] 当前系统信息一览"
 $SysInfo = F_SysInfo
 $SysInfo
 
-Write-Host "[-] 当前系统网络信息一览" -ForegroundColor Green
+F_Logging -Level Info -Msg "[-] 当前系统网络信息一览"
 $SysNetAdapter = F_SysNetAdapter
 $SysNetAdapter
 
-Write-Host "[-] 当前系统磁盘信息一览" -ForegroundColor Green
+F_Logging -Level Info -Msg "[-] 当前系统磁盘信息一览"
 $SysDisk = F_SysDisk
 $SysDisk
 
-Write-Host "[-] 当前系统账户信息一览" -ForegroundColor Green
+F_Logging -Level Info -Msg "[-] 当前系统账户信息一览"
 $SysAccount = F_SysAccount
 $SysAccount
 
-Write-Host "[-] 当前系统安全策略信息一览" -ForegroundColor Green
+F_Logging -Level Info -Msg "[-] 当前系统安全策略信息一览"
 $SysAccountPolicy.CheckResults = F_SysAccountPolicy
 $SysEventAuditPolicy.CheckResults = F_SysEventAuditPolicy
 $SysUserPrivilegePolicy.CheckResults = F_SysUserPrivilegePolicy
@@ -674,11 +778,18 @@ $SysSecurityOptionPolicy.CheckResults = F_SysSecurityOptionPolicy
 $SysRegistryPolicy.CheckResults = F_SysRegistryPolicy
 $SysProcessServicePolicy.CheckResults = F_SysProcessServicePolicy
 
-Write-Host "[-] 当前系统杂类信息一览" -ForegroundColor Green
+F_Logging -Level Info -Msg "[-] 当前系统杂类信息一览"
 $OtherCheck = F_OtherCheckPolicy
 $OtherCheck.Values
 
-Write-Host "[-] 当前系统安全补丁情况信息一览" -ForegroundColor Green
+F_Logging -Level Info -Msg "[-] 当前系统安全补丁情况信息一览"
 F_SysSecurityPolicy
 
-Write-Host "扫描完成时间: $(Get-Date)" -ForegroundColor Green
+# 4.程序执行完毕
+$ScanEndTime = Get-date -Format 'yyyy-M-d H:m:s'
+F_Logging -Level Info -Msg "- Windows Server 安全配置策略基线检测脚本已执行完毕......`n开始时间：${ScanStartTime}`n完成时间: ${ScanEndTime}"
+}
+
+Main
+
+
