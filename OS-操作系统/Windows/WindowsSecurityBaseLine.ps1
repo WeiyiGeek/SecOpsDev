@@ -11,7 +11,6 @@
 # @Runtime: Server 2019 / Windows 10
 #######################################################
 
-
 <#
 .SYNOPSIS
 Windows Server 安全配置策略基线检测脚本 （脚本将会在Github上持续更新）
@@ -21,14 +20,12 @@ Windows Server 操作系统配置策略核查 (符合等保3级的关键检查项)
 
 .EXAMPLE
 WindowsSecurityBaseLine.ps1 -Executor WeiyiGeek -MsrcUpdate False
+- Executor : 脚本执行者
+- MsrcUpdate : 是否在线拉取微软安全中心的服务器安全补丁列表信息(建议一台主机拉取好之后将WSUSList.json和WSUSListId.json拷贝到当前脚本同级目录下)
 
 .NOTES
 注意:不同的版本操作系统以下某些关键项可能会不存在会有一些警告(需要大家提交issue，共同完成)。
 #>
-
-# * PowerShell 脚本执行参数
-# Executor : 脚本执行者
-# MsrcUpdate : 是否在线拉取微软安全中心的服务器安全补丁列表信息(建议一台主机拉取好之后将WSUSList.json和WSUSListId.json拷贝到当前脚本同级目录下)
 [Cmdletbinding()]
 param(
   [Parameter(Mandatory=$true)][String]$Executor,
