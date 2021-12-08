@@ -7,18 +7,19 @@
 # @Blog: https://www.weiyigeek.top
 # @wechat: WeiyiGeeker
 # @Github: https://github.com/WeiyiGeek/SecOpsDev/tree/master/OS-操作系统/Linux/
-# @Version: 3.2
+# @Version: 3.3
 ## ----------------------------------------- ##
 # 脚本主要功能说明:
 # (1) CentOS7系统初始化操作包括IP地址设置、基础软件包更新以及安装加固。
 # (2) CentOS7系统容器以及JDK相关环境安装。
 # (3) CentOS7系统中异常错误日志解决。
 # (4) CentOS7系统中常规服务安装配置，加入数据备份目录。
+# (4) CentOS7脚本错误解决和优化
 ## ----------------------------------------- ##
 
 ## 系统全局变量定义
 # [系统配置]
-HOSTNAME=SecurityServerTemplate
+HOSTNAME=CentOS-Security-Template
 EXECTIME=$(date +%Y%m%d-%m%S)
 
 # [网络配置]
@@ -29,8 +30,8 @@ DNSIP=("223.5.5.5" "223.6.6.6")
 SSHPORT=20211
 
 # [用户设置]
-DefaultUser="WeiyiGeek"
-ROOTPASS=WeiyiGeek  # 密码建议12位以上且包含数字、大小写字母以及特殊字符。
+DefaultUser="WeiyiGeek"  # 系统创建的用户名称非root用户
+ROOTPASS=WeiyiGeek       # 密码建议12位以上且包含数字、大小写字母以及特殊字符。
 APPPASS=WeiyiGeek
 
 # [SNMP配置]
@@ -43,6 +44,10 @@ SNMP_ip=127.0.0.1
 # [配置备份目录]
 BACKUPDIR=/var/log/.backups
 if [ ! -d ${BACKUPDIR} ];then  mkdir -vp ${BACKUPDIR}; fi
+
+# [配置记录目录]
+HISDIR=/var/log/.history
+if [ ! -d ${HISDIR} ];then  mkdir -vp ${HISDIR}; fi
 
 
 ## 名称: err 、info 、warning
@@ -237,7 +242,7 @@ for i in $(cat /etc/passwd | cut -d ":" -f 1,7);do
     log::warning "${i} 非默认用户"
   fi
 done
-cp -a /etc/shadow ${BACKUPDIR}/'shadow-'${EXECTIME}.bak
+cp -a /etc/shadow ${BACKUPDIR}/shadow-${EXECTIME}.bak
 passwd -l adm&>/dev/null 2&>/dev/null; passwd -l daemon&>/dev/null 2&>/dev/null; passwd -l bin&>/dev/null 2&>/dev/null; passwd -l sys&>/dev/null 2&>/dev/null; passwd -l lp&>/dev/null 2&>/dev/null; passwd -l uucp&>/dev/null 2&>/dev/null; passwd -l nuucp&>/dev/null 2&>/dev/null; passwd -l smmsplp&>/dev/null 2&>/dev/null; passwd -l mail&>/dev/null 2&>/dev/null; passwd -l operator&>/dev/null 2&>/dev/null; passwd -l games&>/dev/null 2&>/dev/null; passwd -l gopher&>/dev/null 2&>/dev/null; passwd -l ftp&>/dev/null 2&>/dev/null; passwd -l nobody&>/dev/null 2&>/dev/null; passwd -l nobody4&>/dev/null 2&>/dev/null; passwd -l noaccess&>/dev/null 2&>/dev/null; passwd -l listen&>/dev/null 2&>/dev/null; passwd -l webservd&>/dev/null 2&>/dev/null; passwd -l rpm&>/dev/null 2&>/dev/null; passwd -l dbus&>/dev/null 2&>/dev/null; passwd -l avahi&>/dev/null 2&>/dev/null; passwd -l mailnull&>/dev/null 2&>/dev/null; passwd -l nscd&>/dev/null 2&>/dev/null; passwd -l vcsa&>/dev/null 2&>/dev/null; passwd -l rpc&>/dev/null 2&>/dev/null; passwd -l rpcuser&>/dev/null 2&>/dev/null; passwd -l nfs&>/dev/null 2&>/dev/null; passwd -l sshd&>/dev/null 2&>/dev/null; passwd -l pcap&>/dev/null 2&>/dev/null; passwd -l ntp&>/dev/null 2&>/dev/null; passwd -l haldaemon&>/dev/null 2&>/dev/null; passwd -l distcache&>/dev/null 2&>/dev/null; passwd -l webalizer&>/dev/null 2&>/dev/null; passwd -l squid&>/dev/null 2&>/dev/null; passwd -l xfs&>/dev/null 2&>/dev/null; passwd -l gdm&>/dev/null 2&>/dev/null; passwd -l sabayon&>/dev/null 2&>/dev/null; passwd -l named&>/dev/null 2&>/dev/null
 
 
@@ -288,7 +293,7 @@ sed -i "/# Allows members of the/i ${DefaultUser} ALL=(ALL) PASSWD:ALL" /etc/sud
 log::info "[-] 配置用户 umask 为022 "
 cp -a /etc/profile ${BACKUPDIR}/profile
 egrep -q "^\s*umask\s+\w+.*$" /etc/profile && sed -ri "s/^\s*umask\s+\w+.*$/umask 022/" /etc/profile || echo "umask 022" >> /etc/profile 
-# log::info "[-] 设置用户目录创建默认权限, (初始为077比较严格)在未设置umask为027 则默认为077"
+# log::info "[-] 设置用户目录创建默认权限, (初始为077比较严格)在未设置umask为027则默认为077"
 # egrep -q "^\s*umask\s+\w+.*$" /etc/csh.login && sed -ri "s/^\s*umask\s+\w+.*$/umask 022/" /etc/csh.login || echo "umask 022" >> /etc/csh.login
 # egrep -q "^\s*umask\s+\w+.*$" /etc/csh.cshrc && sed -ri "s/^\s*umask\s+\w+.*$/umask 022/" /etc/csh.cshrc || echo "umask 022" >> /etc/csh.cshrc
 # egrep -q "^\s*(umask|UMASK)\s+\w+.*$" /etc/login.defs && sed -ri "s/^\s*(umask|UMASK)\s+\w+.*$/UMASK 027/" /etc/login.defs || echo "UMASK 027" >> /etc/login.defs
@@ -362,16 +367,16 @@ EOF
 
 
 # (5) 用户远程登录失败次数与终端超时设置 
-log::info "[-] 用户远程连续登录失败5次锁定帐号5分钟包括root账号"
+log::info "[-] 用户远程连续登录失败10次锁定帐号5分钟包括root账号"
 cp /etc/pam.d/sshd ${BACKUPDIR}/sshd.bak
 cp /etc/pam.d/login ${BACKUPDIR}/login.bak
 
 # 远程登陆
 sed -ri "/^\s*auth\s+required\s+pam_tally2.so\s+.+(\s*#.*)?\s*$/d" /etc/pam.d/sshd 
-sed -ri '2a auth required pam_tally2.so deny=5 unlock_time=300 even_deny_root root_unlock_time=300' /etc/pam.d/sshd 
+sed -ri '2a auth required pam_tally2.so deny=10 unlock_time=300 even_deny_root root_unlock_time=300' /etc/pam.d/sshd 
 # 宿主机控制台登陆(可选)
 # sed -ri "/^\s*auth\s+required\s+pam_tally2.so\s+.+(\s*#.*)?\s*$/d" /etc/pam.d/login
-# sed -ri '2a auth required pam_tally2.so deny=5 unlock_time=300 even_deny_root root_unlock_time=300' /etc/pam.d/login
+# sed -ri '2a auth required pam_tally2.so deny=10 unlock_time=300 even_deny_root root_unlock_time=300' /etc/pam.d/login
 
 log::info "[-] 设置登录超时时间为10分钟 "
 egrep -q "^\s*(export|)\s*TMOUT\S\w+.*$" /etc/profile && sed -ri "s/^\s*(export|)\s*TMOUT.\S\w+.*$/export TMOUT=600\nreadonly TMOUT/" /etc/profile || echo -e "export TMOUT=600\nreadonly TMOUT" >> /etc/profile
@@ -380,15 +385,16 @@ egrep -q "^\s*.*ClientAliveInterval\s\w+.*$" /etc/ssh/sshd_config && sed -ri "s/
 
 # (6) 切换用户日志记录和切换命令更改名称为SU
 log::info "[-] 切换用户日志记录和切换命令更改名称为SU "
-cp -a /etc/rsyslog.conf  ${BACKUPDIR}/'rsyslog.conf-'${EXECTIME}.bak
+cp -a /etc/rsyslog.conf  ${BACKUPDIR}/rsyslog.conf-${EXECTIME}.bak
 egrep -q "^\s*authpriv\.\*\s+.+$" /etc/rsyslog.conf && sed -ri "s/^\s*authpriv\.\*\s+.+$/authpriv.*  \/var\/log\/secure/" /etc/rsyslog.conf || echo "authpriv.*  /var/log/secure" >> /etc/rsyslog.conf
 egrep -q "^(\s*)SULOG_FILE\s+\S*(\s*#.*)?\s*$" /etc/login.defs && sed -ri "s/^(\s*)SULOG_FILE\s+\S*(\s*#.*)?\s*$/\SULOG_FILE  \/var\/log\/.history\/sulog/" /etc/login.defs || echo "SULOG_FILE  /var/log/.history/sulog" >> /etc/login.defs
 egrep -q "^\s*SU_NAME\s+\S*(\s*#.*)?\s*$" /etc/login.defs && sed -ri "s/^(\s*)SU_NAME\s+\S*(\s*#.*)?\s*$/\SU_NAME  SU/" /etc/login.defs || echo "SU_NAME  SU" >> /etc/login.defs
-mkdir -vp /usr/local/bin /var/log/.history
+mkdir -vp /usr/local/bin
 cp /usr/bin/su ${BACKUPDIR}/su.bak
 mv /usr/bin/su /usr/bin/SU
 chmod 777 /var/log/.history 
-
+chattr -R +a /var/log/.history 
+chattr +a /var/log/.backups 
 
 # (7) 用户终端执行的历史命令记录
 log::info "[-] 用户终端执行的历史命令记录 "
@@ -429,11 +435,11 @@ password_pbkdf2 grub grub.pbkdf2.sha512.10000.A4A6B06EFAB660C11DD8EBC3BE73C5AB5D
 EOF
 END
 # 设置进入正式系统不需要认证如进入单用户模式进行重置账号密码时需要进行认证。 （高敏感数据库系统不建议下述操作）
-# 在 135 加入 -unrestricted ，例如
+# 在 135 加入 -unrestricted ，例如, 此处与Ubuntu不同的是不加--user=grub
 # 133 echo "menuentry $(echo "$title" | grub_quote)' ${CLASS} \$menuentry_id_option 'gnulinux-$version-$type-    $boot_device_id' {" | sed "s/^/$submenu_indentation/"
 # 134   else
 # 135 echo "menuentry --unrestricted '$(echo "$os" | grub_quote)' ${CLASS} \$menuentry_id_option 'gnulinux-simple-$boot_devic    e_id' {" | sed "s/^/$submenu_indentation/"
-sed -i '/echo "$title" | grub_quote/ { s/menuentry /menuentry --user=grub /;}' /etc/grub.d/10_linux
+sed -i '/echo "$title" | grub_quote/ { s/menuentry /menuentry /;}' /etc/grub.d/10_linux
 sed -i '/echo "$os" | grub_quote/ { s/menuentry /menuentry --unrestricted /;}' /etc/grub.d/10_linux
 # CentOS 方式更新GRUB从而生成boot启动文件
 grub2-mkconfig -o /boot/grub2/grub.cfg
@@ -463,6 +469,7 @@ egrep -q "^\s*\*\.err;kern.debug;daemon.notice\s+.+$" /etc/rsyslog.conf && sed -
 # (10) 关闭CentOS服务器中 SELINUX 以及防火墙端口放行
   log::info "[-] SELINUX 禁用以及系统防火墙规则设置 "
 sed -i "s/SELINUX=enforcing/SELINUX=disabled/g" /etc/selinux/config 
+semanage port -m -t ssh_port_t -p tcp 20211 # 添加sshd服务20211端口到SELinux
 firewall-cmd --zone=public --add-port=20211/tcp --permanent
 firewall-cmd --zone=public --add-port=161/udp --permanent
 firewall-cmd --reload
@@ -479,7 +486,7 @@ os::Operation () {
 
 # (0) 禁用ctrl+alt+del组合键对系统重启 (必须要配置,我曾入过坑)
  log::info "[-] 禁用控制台ctrl+alt+del组合键重启"
-mv /usr/lib/systemd/system/ctrl-alt-del.target ${BACKUPDIR}/'ctrl-alt-del.target-'${EXECTIME}.bak
+mv /usr/lib/systemd/system/ctrl-alt-del.target ${BACKUPDIR}/ctrl-alt-del.target-${EXECTIME}.bak
 
 # (1) 设置文件删除回收站别名
   log::info "[-] 设置文件删除回收站别名(防止误删文件) "
@@ -503,6 +510,8 @@ if [ ! -e ${TRASH_DIR} ];then
 fi
 for i in $*;do
   if [ "$i" = "-rf" ];then continue;fi
+  # 防止误操作
+  if [ "$i" = "/" ];then echo '# Danger delete command, Not delete / directory!';exit -1;fi
 	#定义秒时间戳
 	STAMP=$(date +%s)
 	#得到文件名称(非文件夹)，参考man basename
@@ -702,3 +711,17 @@ disk::lvsmanager () {
   echo "lsblk"
   echo -e "Centos \n # xfs_growfs /dev/mapper/centos-root"
 }
+
+
+
+# 安全加固过程临时文件清理为基线镜像做准备
+unalias rm
+find ~/.trash/* -delete
+find /home/ -type d -name .trash -exec find {} -delete \;
+find /var/log -name "*.gz" -delete
+find /var/log -name "*log.*" -delete
+find /var/log -name "vmware-*.*.log" -delete
+find /var/log -name "*.log" -exec truncate -s 0 {} \;
+find /var/log -name "system@*" -delete
+find /var/log -name "user-1000@*" -delete
+find /tmp/* -delete

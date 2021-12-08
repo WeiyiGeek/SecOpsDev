@@ -7,23 +7,24 @@
 # @Blog: https://www.weiyigeek.top
 # @wechat: WeiyiGeeker
 # @Github: https://github.com/WeiyiGeek/SecOpsDev/tree/master/OS-操作系统/Linux/
-# @Version: 3.2
+# @Version: 3.3
 #-------------------------------------------------#
 # 脚本主要功能说明:
 # (1) Ubuntu 系统初始化操作包括IP地址设置、基础软件包更新以及安装加固。
 # (2) Ubuntu 系统容器以及JDK相关环境安装。
 # (3) Ubuntu 系统中异常错误日志解决。
 # (4) Ubuntu 系统常规服务安装配置，加入数据备份目录。
+# (5) Ubuntu 脚本错误优化、添加禁用cloud-init
 #-------------------------------------------------#
 
 ## 系统全局变量定义
-HOSTNAME=SecurityServerTemplate
+HOSTNAME=Ubuntu-Security-Template
 IP=192.168.1.2
 GATEWAY=192.168.1.1
 DNSIP=("223.5.5.5" "223.6.6.6")
 SSHPORT=20211
-DefaultUser="WeiyiGeek"
-ROOTPASS=WeiyiGeek  # 密码建议12位以上且包含数字、大小写字母以及特殊字符。
+DefaultUser="WeiyiGeek"  # 系统创建的用户名称非root用户
+ROOTPASS=WeiyiGeek       # 密码建议12位以上且包含数字、大小写字母以及特殊字符。
 APPPASS=WeiyiGeek
 
 ## 名称: err 、info 、warning
@@ -144,7 +145,7 @@ rtcsync
 # 允许跳跃式校时 如果在前 3 次校时中时间差大于 1.0s
 makestep 1 3
 EOF
-systemctl enable chronyd && systemctl restart chronyd && systemctl status chronyd -l
+systemctl enable chrony && systemctl restart chrony && systemctl status chrony -l
 
 # 方式2
 # sudo ntpdate 192.168.10.254 || sudo ntpdate 192.168.12.215 || sudo ntpdate ntp1.aliyun.com
@@ -204,7 +205,7 @@ for i in $(cat /etc/passwd | cut -d ":" -f 1,7);do
     log::warning "${i} 非默认用户"
   fi
 done
-cp /etc/shadow /etc/'shadow-'`date +%Y%m%d`.bak
+cp /etc/shadow /etc/shadow-`date +%Y%m%d`.bak
 passwd -l adm&>/dev/null 2&>/dev/null; passwd -l daemon&>/dev/null 2&>/dev/null; passwd -l bin&>/dev/null 2&>/dev/null; passwd -l sys&>/dev/null 2&>/dev/null; passwd -l lp&>/dev/null 2&>/dev/null; passwd -l uucp&>/dev/null 2&>/dev/null; passwd -l nuucp&>/dev/null 2&>/dev/null; passwd -l smmsplp&>/dev/null 2&>/dev/null; passwd -l mail&>/dev/null 2&>/dev/null; passwd -l operator&>/dev/null 2&>/dev/null; passwd -l games&>/dev/null 2&>/dev/null; passwd -l gopher&>/dev/null 2&>/dev/null; passwd -l ftp&>/dev/null 2&>/dev/null; passwd -l nobody&>/dev/null 2&>/dev/null; passwd -l nobody4&>/dev/null 2&>/dev/null; passwd -l noaccess&>/dev/null 2&>/dev/null; passwd -l listen&>/dev/null 2&>/dev/null; passwd -l webservd&>/dev/null 2&>/dev/null; passwd -l rpm&>/dev/null 2&>/dev/null; passwd -l dbus&>/dev/null 2&>/dev/null; passwd -l avahi&>/dev/null 2&>/dev/null; passwd -l mailnull&>/dev/null 2&>/dev/null; passwd -l nscd&>/dev/null 2&>/dev/null; passwd -l vcsa&>/dev/null 2&>/dev/null; passwd -l rpc&>/dev/null 2&>/dev/null; passwd -l rpcuser&>/dev/null 2&>/dev/null; passwd -l nfs&>/dev/null 2&>/dev/null; passwd -l sshd&>/dev/null 2&>/dev/null; passwd -l pcap&>/dev/null 2&>/dev/null; passwd -l ntp&>/dev/null 2&>/dev/null; passwd -l haldaemon&>/dev/null 2&>/dev/null; passwd -l distcache&>/dev/null 2&>/dev/null; passwd -l webalizer&>/dev/null 2&>/dev/null; passwd -l squid&>/dev/null 2&>/dev/null; passwd -l xfs&>/dev/null 2&>/dev/null; passwd -l gdm&>/dev/null 2&>/dev/null; passwd -l sabayon&>/dev/null 2&>/dev/null; passwd -l named&>/dev/null 2&>/dev/null
 
 # (2) 用户密码设置和口令策略设置
@@ -223,7 +224,7 @@ chage -d 0 -m 0 -M 90 -W 15 app && passwd --expire app
 
   log::info "[-] 用户口令复杂性策略设置 (密码过期周期0~90、到期前15天提示、密码长度至少15、复杂度设置至少有一个大小写、数字、特殊字符、密码三次不能一样、尝试次数为三次)"
 egrep -q "^\s*PASS_MIN_DAYS\s+\S*(\s*#.*)?\s*$" /etc/login.defs && sed -ri "s/^(\s*)PASS_MIN_DAYS\s+\S*(\s*#.*)?\s*$/\PASS_MIN_DAYS  0/" /etc/login.defs || echo "PASS_MIN_DAYS  0" >> /etc/login.defs
-egrep -q "^\s*PASS_MAX_DAYS\s+\S*(\s*#.*)?\s*$" /etc/login.defs && sed -ri "s/^(\s*)PASS_MAX_DAYS\s+\S*(\s*#.*)?\s*$/\PASS_MAX_DAYS  60/" /etc/login.defs || echo "PASS_MAX_DAYS  90" >> /etc/login.defs
+egrep -q "^\s*PASS_MAX_DAYS\s+\S*(\s*#.*)?\s*$" /etc/login.defs && sed -ri "s/^(\s*)PASS_MAX_DAYS\s+\S*(\s*#.*)?\s*$/\PASS_MAX_DAYS  90/" /etc/login.defs || echo "PASS_MAX_DAYS  90" >> /etc/login.defs
 egrep -q "^\s*PASS_WARN_AGE\s+\S*(\s*#.*)?\s*$" /etc/login.defs && sed -ri "s/^(\s*)PASS_WARN_AGE\s+\S*(\s*#.*)?\s*$/\PASS_WARN_AGE  15/" /etc/login.defs || echo "PASS_WARN_AGE  15" >> /etc/login.defs
 egrep -q "^\s*PASS_MIN_LEN\s+\S*(\s*#.*)?\s*$" /etc/login.defs && sed -ri "s/^(\s*)PASS_MIN_LEN\s+\S*(\s*#.*)?\s*$/\PASS_MIN_LEN  15/" /etc/login.defs || echo "PASS_MIN_LEN  15" >> /etc/login.defs
 
@@ -242,10 +243,10 @@ touch /etc/security/opasswd && chown root:root /etc/security/opasswd && chmod 60
 sed -i "/# Members of the admin/i ${DefaultUser} ALL=(ALL) PASSWD:ALL" /etc/sudoers
 
 
-  log::info "[-] 配置用户 umask 为027 "
-egrep -q "^\s*umask\s+\w+.*$" /etc/profile && sed -ri "s/^\s*umask\s+\w+.*$/umask 027/" /etc/profile || echo "umask 027" >> /etc/profile
-egrep -q "^\s*umask\s+\w+.*$" /etc/bash.bashrc && sed -ri "s/^\s*umask\s+\w+.*$/umask 027/" /etc/bashrc || echo "umask 027" >> /etc/bash.bashrc
-# log::info "[-] 设置用户目录创建默认权限, (初始为077比较严格)在未设置umask为027 则默认为077"
+  log::info "[-] 配置用户 umask 为022 "
+egrep -q "^\s*umask\s+\w+.*$" /etc/profile && sed -ri "s/^\s*umask\s+\w+.*$/umask 022/" /etc/profile || echo "umask 022" >> /etc/profile
+egrep -q "^\s*umask\s+\w+.*$" /etc/bash.bashrc && sed -ri "s/^\s*umask\s+\w+.*$/umask 022/" /etc/bashrc || echo "umask 022" >> /etc/bash.bashrc
+# log::info "[-] 设置用户目录创建默认权限, (初始为077比较严格)，在设置 umask 为022 及 777 - 022 "
 # egrep -q "^\s*(umask|UMASK)\s+\w+.*$" /etc/login.defs && sed -ri "s/^\s*(umask|UMASK)\s+\w+.*$/UMASK 022/" /etc/login.defs || echo "UMASK 022" >> /etc/login.defs
 
   log::info "[-] 设置或恢复重要目录和文件的权限"
@@ -297,9 +298,9 @@ sed -i '/^fi/a\\n\necho "\\e[1;37;41;5m################## 安全运维 (Security
 
 
 # (5) 用户远程登录失败次数与终端超时设置 
-  log::info "[-] 用户远程连续登录失败5次锁定帐号5分钟包括root账号"
+  log::info "[-] 用户远程连续登录失败10次锁定帐号5分钟包括root账号"
 sed -ri "/^\s*auth\s+required\s+pam_tally2.so\s+.+(\s*#.*)?\s*$/d" /etc/pam.d/sshd 
-sed -ri '2a auth required pam_tally2.so deny=5 unlock_time=300 even_deny_root root_unlock_time=300' /etc/pam.d/sshd 
+sed -ri '2a auth required pam_tally2.so deny=10 unlock_time=300 even_deny_root root_unlock_time=300' /etc/pam.d/sshd 
 # 宿主机控制台登陆(可选)
 # sed -ri "/^\s*auth\s+required\s+pam_tally2.so\s+.+(\s*#.*)?\s*$/d" /etc/pam.d/login
 # sed -ri '2a auth required pam_tally2.so deny=5 unlock_time=300 even_deny_root root_unlock_time=300' /etc/pam.d/login
@@ -312,11 +313,14 @@ egrep -q "^\s*.*ClientAliveInterval\s\w+.*$" /etc/ssh/sshd_config && sed -ri "s/
 # (5) 切换用户日志记录或者切换命令更改(可选)
   log::info "[-] 切换用户日志记录和切换命令更改名称为SU "
 egrep -q "^(\s*)SULOG_FILE\s+\S*(\s*#.*)?\s*$" /etc/login.defs && sed -ri "s/^(\s*)SULOG_FILE\s+\S*(\s*#.*)?\s*$/\SULOG_FILE  \/var\/log\/.history\/sulog/" /etc/login.defs || echo "SULOG_FILE  /var/log/.history/sulog" >> /etc/login.defs
-egrep -q "^\s*SU_NAME\s+\S*(\s*#.*)?\s*$" /etc/login.defs && sed -ri "s/^(\s*)SU_NAME\s+\S*(\s*#.*)?\s*$/\SU_NAME  switch_user/" /etc/login.defs || echo "SU_NAME  switch_user" >> /etc/login.defs
-mkdir -vp /var/log/.backups /usr/local/bin /var/log/.history
+egrep -q "^\s*SU_NAME\s+\S*(\s*#.*)?\s*$" /etc/login.defs && sed -ri "s/^(\s*)SU_NAME\s+\S*(\s*#.*)?\s*$/\SU_NAME  SU/" /etc/login.defs || echo "SU_NAME  SU" >> /etc/login.defs
+mkdir -vp /usr/local/bin /var/log/.backups /var/log/.history /var/log/.history/sulog
 cp /usr/bin/su /var/log/.backups/su.bak
 mv /usr/bin/su /usr/bin/SU
-chmod 777 /var/log/.history 
+# 只能写入不能删除其目标目录中的文件
+# chmod -R 1777 /var/log/.history
+chattr -R +a /var/log/.history 
+chattr +a /var/log/.backups
 
 # (6) 用户终端执行的历史命令记录
 log::info "[-] 用户终端执行的历史命令记录 "
@@ -403,11 +407,11 @@ os::Operation () {
 
 # (0) 禁用ctrl+alt+del组合键对系统重启 (必须要配置,我曾入过坑)
   log::info "[-] 禁用控制台ctrl+alt+del组合键重启"
-mv /usr/lib/systemd/system/ctrl-alt-del.target ${BACKUPDIR}/'ctrl-alt-del.target-'${EXECTIME}.bak
+mv /usr/lib/systemd/system/ctrl-alt-del.target /var/log/.backups/ctrl-alt-del.target-$(date +%Y%m%d).bak
 
 # (1) 设置文件删除回收站别名
   log::info "[-] 设置文件删除回收站别名(防止误删文件) "
-sudo tee -a  /etc/profile.d/alias.sh <<'EOF'
+sudo tee /etc/profile.d/alias.sh <<'EOF'
 # User specific aliases and functions
 # 删除回收站
 # find ~/.trash -delete
@@ -427,12 +431,14 @@ if [ ! -e ${TRASH_DIR} ];then
 fi
 for i in $*;do
   if [ "$i" = "-rf" ];then continue;fi
-	#定义秒时间戳
-	STAMP=$(date +%s)
-	#得到文件名称(非文件夹)，参考man basename
-	fileName=$(basename $i)
-	#将输入的参数，对应文件mv至.trash目录，文件后缀，为当前的时间戳
-	mv $i ${TRASH_DIR}/${fileName}.${STAMP}
+  # 防止误操作
+  if [ "$i" = "/" ];then echo '# Danger delete command, Not delete / directory!';exit -1;fi
+  #定义秒时间戳
+  STAMP=$(date +%s)
+  #得到文件名称(非文件夹)，参考man basename
+  fileName=$(basename $i)
+  #将输入的参数，对应文件mv至.trash目录，文件后缀，为当前的时间戳
+  mv $i ${TRASH_DIR}/${fileName}.${STAMP}
 done
 EOF
 sudo chmod +775 /usr/local/bin/remove.sh /etc/profile.d/alias.sh /etc/profile.d/history-record.sh
@@ -455,6 +461,10 @@ blacklist {
 EOF
 # 重启multipath-tools服务
 sudo service multipath-tools restart
+
+# (4) 禁用 Ubuntu 中的 cloud-init
+# 在 /etc/cloud 目录下创建 cloud-init.disabled 文件,注意重启后生效
+sudo touch /etc/cloud/cloud-init.disabled
 }
 
 
@@ -505,7 +515,7 @@ EOF
 
 
 # (2) Linux 系统的最大进程数和最大文件打开数限制
-log::info "[-] Linux 系统的最大进程数和最大文件打开数限制 "
+log::info "[-] Linux 系统的最大进程数和最大文件打开数限制"
 egrep -q "^\s*ulimit -HSn\s+\w+.*$" /etc/profile && sed -ri "s/^\s*ulimit -HSn\s+\w+.*$/ulimit -HSn 65535/" /etc/profile || echo "ulimit -HSn 65535" >> /etc/profile
 egrep -q "^\s*ulimit -HSu\s+\w+.*$" /etc/profile && sed -ri "s/^\s*ulimit -HSu\s+\w+.*$/ulimit -HSu 65535/" /etc/profile || echo "ulimit -HSu 65535" >> /etc/profile
 
@@ -671,3 +681,14 @@ disk::Lvsmanager () {
   echo "lsblk"
   echo -e "ubuntu general \n # resize2fs -p -F /dev/mapper/ubuntu--vg-ubuntu--lv"
 }
+
+# 安全加固过程临时文件清理为基线镜像做准备
+unalias rm
+find ~/.trash/* -delete
+find /home/ -type d -name .trash -exec find {} -delete \;
+find /var/log -name "*.gz" -delete
+find /var/log -name "*log.*" -delete
+find /var/log -name "vmware-*.*.log" -delete
+find /var/log -name "*.log-*" -delete
+find /var/log -name "*.log" -exec truncate -s 0 {} \;
+find /tmp/* -delete

@@ -2,12 +2,12 @@
 # @Author: WeiyiGeek
 # @Description:  Windows Server °²È«ÅäÖÃ²ßÂÔ»ùÏß¼Ó¹Ì½Å±¾
 # @Create Time:  2019Äê5ÔÂ6ÈÕ 11:04:42
-# @Last Modified time: 2021-11-15 11:06:31
+# @Last Modified time: 2021Äê11ÔÂ17ÈÕ 16:02:36
 # @E-mail: master@weiyigeek.top
 # @Blog: https://www.weiyigeek.top
 # @wechat: WeiyiGeeker
 # @Github: https://github.com/WeiyiGeek/SecOpsDev/tree/master/OS-²Ù×÷ÏµÍ³/Windows/
-# @Version: 1.8
+# @Version: 1.9
 # @Runtime: Server 2019 / Windows 10
 ## ----------------------------------------- ##
 # ½Å±¾Ö÷Òª¹¦ÄÜËµÃ÷:
@@ -18,6 +18,7 @@
 
 # * ÎÄ¼şÊä³öÄ¬ÈÏÎªUTF-8¸ñÊ½
 # $PSDefaultParameterValues['Out-File:Encoding'] = 'utf8'
+$WUSUServer="http://wusu.weiyigeek.top"
 
 <#
 .SYNOPSIS
@@ -164,7 +165,8 @@ $SysRegistryPolicy = @{
   restrictanonymous = @{reg="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa";name="restrictanonymous";regtype="DWord";operator="eq";value=1;msg="²»ÔÊĞíSAMÕË»§ºÍ¹²ÏíµÄÄäÃûÃ¶¾ÙÖµÎª(ÆôÓÃ)"}
   restrictanonymoussam = @{reg="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa";name="restrictanonymoussam";regtype="DWord";operator="eq";value=1;msg="²»ÔÊĞíSAMÕË»§µÄÄäÃûÃ¶¾ÙÖµÎª(ÆôÓÃ)"}
 
-  # + ½ûÓÃ´ÅÅÌ¹²Ïí(SMB)
+  # + ½ûÓÃ´ÅÅÌ¹²Ïí(SMB·şÎñ)
+  SMBDeviceEnabled = @{reg="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\services\NetBT\Parameters";name="SMBDeviceEnabled";regtype="QWord";operator="eq";value=0;msg="¹Ø±Õ½ûÓÃSMB¹²Ïí·şÎñ"}
   AutoShareWks = @{reg="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\lanmanserver\parameters";name="AutoShareWks";regtype="DWord";operator="eq";value=0;msg="¹Ø±Õ½ûÓÃÄ¬ÈÏ¹²Ïí²ßÂÔ-Server2012"}
   AutoShareServer = @{reg="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\lanmanserver\parameters";name="AutoShareServer";regtype="DWord";operator="eq";value=0;msg="¹Ø±Õ½ûÓÃÄ¬ÈÏ¹²Ïí²ßÂÔ-Server2012"}
 
@@ -208,9 +210,9 @@ $SysRegistryPolicy = @{
   ScheduledInstallTime = @{reg="HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU";name="ScheduledInstallTime";regtype="DWord";operator="eq";value=1;msg="¼Æ»®°²×°Ê±¼äÎªÁè³¿1µã"}
   # ÆôÓÃ²ßÂÔ×é£¨Ö¸¶¨Intranet Microsoft¸üĞÂ·şÎñÎ»ÖÃ£©
   UseWUServer = @{reg="HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU";name="UseWUServer";regtype="DWord";operator="eq";value=1;msg="Ö¸¶¨Intranet Microsoft¸üĞÂ·şÎñ²¹¶¡·şÎñÆ÷"}
-  WUServer = @{reg="HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate";name="WUServer";regtype="String";value="http://wsus.weiyigeek.top";operator="eq";msg="ÉèÖÃ¼ì²â¸üĞÂµÄintranet¸üĞÂ·şÎñ"}
-  WUStatusServer = @{reg="HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate";name="WUStatusServer";regtype="String";value="http://wsus.weiyigeek.top";operator="eq";msg="ÉèÖÃIntranetÍ³¼Æ·şÎñÆ÷"}
-  UpdateServiceUrlAlternate = @{reg="HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate";name="UpdateServiceUrlAlternate";regtype="String";value="http://wsus.weiyigeek.top";operator="eq";msg="ÉèÖÃ±¸ÓÃÏÂÔØ·şÎñÆ÷"}
+  WUServer = @{reg="HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate";name="WUServer";regtype="String";value="$WUSUServer";operator="eq";msg="ÉèÖÃ¼ì²â¸üĞÂµÄintranet¸üĞÂ·şÎñ"}
+  WUStatusServer = @{reg="HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate";name="WUStatusServer";regtype="String";value="$WUSUServer";operator="eq";msg="ÉèÖÃIntranetÍ³¼Æ·şÎñÆ÷"}
+  # UpdateServiceUrlAlternate = @{reg="HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate";name="UpdateServiceUrlAlternate";regtype="String";value="http://wsus.weiyigeek.top";operator="eq";msg="ÉèÖÃ±¸ÓÃÏÂÔØ·şÎñÆ÷"}
 }
 
 
@@ -476,12 +478,12 @@ F_ServiceManager -Name server -Operator restart -StartType Automatic
   # - ¸ù¾İ$Operator²Ù×÷·şÎñÆô¶¯¡¢Í£Ö¹¡¢ÖØÆô
   switch ($Operator) {
     Start { 
-      if ( "$ServiceStatus" -ne "Running" ) {
+      if ( "$ServiceStatus" -eq "Stopped" ) {
         F_Logging -Level Info -Msg "ÕıÔÚÆô¶¯ $Name ·şÎñ";Start-Service -Name $Name -Force
       }
     }
     Stop { 
-      if ( "$ServiceStatus" -ne "Stopped" ) {
+      if ( "$ServiceStatus" -eq "Running" ) {
         F_Logging -Level Warning -Msg "ÕıÔÚÍ£Ö¹ $Name ·şÎñ";Stop-Service -Name $Name -Force
       }
     }
@@ -514,21 +516,44 @@ F_ExtentionReinforce º¯Êı£ºÕë¶ÔÓÚÏµÍ³ÔİÎŞ°ì·¨Í¨¹ı×¢²á±íÒÔ¼°×é²ßÂÔÅäÖÃµÄ½«ÔÚ´Ë´¦Ö
 .EXAMPLE
 F_ExtentionReinforce 
 #>
-  # [+] ½ûÓÃ¹²Ïí·şÎñÒÔ¼°É¾³ıµ±Ç°Ö÷»úÖĞËùÓĞ¹²Ïí
 
-  F_ServiceManager -Name lanmanserver -Operator Stop -StartType Manual
-  (gwmi -class win32_share).delete()
-  # ·½Ê½2.(Get-WmiObject -class win32_share).delete()
+  # [+] ½ûÓÃ135¡¢139¶Ë¿Ú(ÔİÎŞ²éÑ¯µ½ÀûÓÃÃüÁî½øĞĞ¹Ø±Õ£¬ºóĞøÓĞÖªµÀµÄĞ¡»ï°é Issue Ó´)
+  # 135 -> dcomcnfg -> ×é¼ş·şÎñ -> ÎÒµÄµçÄÔ -> ÊôĞÔ -> {Ä¬ÈÏÊôĞÔ£¬È¡ÏûÆô¶¯·Ö²¼Ê½COM;Ä¬ÈÏĞ­Òé£¬É¾³ıÃæÏòÁ¬½ÓµÄTCP/IP}
+  # HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Ole\EnableDCOMµÄÖµ¸ÄÎª¡°N¡±
+  # HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Rpc\ClientProtocols ÖĞÉ¾³ı¡°ncacn_ip_tcp¡±
+  # 139 -> ÍøÂçÁ¬½Ó -> ÒÔÌ«ÍøÊôĞÔ -> TCP/IPV4ÊôĞÔ -> ¸ß¼¶ -> Wins -> {È¡ÏûÆôÓÃLMHOSTS¡¢½ûÓÃTCP/IPÉÏµÄNETBIOS}
 
-  # [+] ÆôÓÃwindows·À»ğÇ½ÒÔ¼°·À»ğÇ½Ïà¹Ø
+  # [+] ½ûÓÃ¹²Ïí·şÎñÒÔ¼°É¾³ıµ±Ç°Ö÷»úÖĞËùÓĞ¹²Ïí,¼´¹Ø±Õ¼àÌı445¶Ë¿Ú
+  F_ServiceManager -Name Spooler -Operator Stop -StartType Disabled             # Print Spooler: ¸Ã·şÎñÔÚºóÌ¨Ö´ĞĞ´òÓ¡×÷Òµ²¢´¦ÀíÓë´òÓ¡»úµÄ½»»¥¡£
+  F_ServiceManager -Name LanmanWorkstation -Operator Stop -StartType Disabled   # Workstation: Ê¹ÓÃ SMB Ğ­Òé´´½¨²¢Î¬»¤¿Í»§¶ËÍøÂçÓëÔ¶³Ì·şÎñÆ÷Ö®¼äµÄÁ¬½Ó¡£
+  F_ServiceManager -Name LanmanServer -Operator Stop -StartType Disabled        # Server: Ö§³Ö´Ë¼ÆËã»úÍ¨¹ıÍøÂçµÄÎÄ¼ş¡¢´òÓ¡¡¢ºÍÃüÃû¹ÜµÀ¹²Ïí¡£
+  (gwmi -class win32_share).delete()                                            # ÆäËü·½Ê½ (Get-WmiObject -class win32_share).delete()
+
+  # [+] ½ûÓÃÍøÂç·¢ÏÖ·şÎñ Function Discovery Resource Publication ,¼´¹Ø±Õ¼àÌı5357¶Ë¿Ú
+  F_ServiceManager -Name FDResPub -Operator Stop -StartType Disabled
+
+  # [+] ½ûÓÃWindowsÔ¶³Ì¹ÜÀí(WinRM)·şÎñ Windows Remote Management (WS-Management) ,¼´¹Ø±Õ¼àÌı5985¶Ë¿Ú £¨×¢ÒâÔÚ°²×°Ä³Ğ©Èí¼şÊ±ĞèÒªÆô¶¯¸Ã·şÎñ£©
+  F_ServiceManager -Name WinRM -Operator Stop -StartType Manual
+
+  # [+] ÆôÓÃ²Ù×÷ÏµÍ³Ê±¼äÍ¬²½
+  F_ServiceManager -Name w32tm -Operator Start -StartType Automatic             # Windows Time Î¬»¤ÔÚÍøÂçÉÏµÄËùÓĞ¿Í»§¶ËºÍ·şÎñÆ÷µÄÊ±¼äºÍÈÕÆÚÍ¬²½
+  w32tm /config /syncfromflags:MANUAL /manualpeerlist:"192.168.12.254,0x08 192.168.10.254,0x08" /update
+  w32tm /resync /rediscover
+  w32tm /query /peers
+
+  # [+] ÆôÓÃ&¹Ø±Õwindows·À»ğÇ½
+  # ¹Ø±Õ·À»ğÇ½netsh advfirewall set allprofiles state off
   netsh advfirewall set allprofiles state on
+
+  # [+] ÏµÍ³·şÎñ·À»ğÇ½Ïà¹Ø¹æÔòÉèÖÃ
   # ÆôÓÃ¡¢»òÕß½ûÓÃÎÄ¼şºÍ´òÓ¡»ú¹²Ïí(»ØÏÔÇëÇó - ICMPv4-In) ¸ù¾İĞèÇó¶ø¶¨
   # Enable-NetFirewallRule -Name FPS-ICMP4-ERQ-In
   Disable-NetFirewallRule  -Name FPS-ICMP4-ERQ-In
   Get-NetFirewallRule -Name "CustomSecurity-Remote-Desktop-Port" -ErrorAction SilentlyContinue
-  if ($?) {
+  if (-not($?)) {
     # ÔÊĞíÆäËüÖ÷»ú·ÃÎÊ Remote-Desktop-Port µÄ39393¶Ë¿Ú¡£
     New-NetFirewallRule -Name "CustomSecurity-Remote-Desktop-Port" -DisplayName "CustomSecurity-Remote-Desktop-Port" -Description "CustomSecurity-Remote-Desktop-Port" -Direction Inbound -LocalPort 39393 -Protocol TCP -Action Allow -Enabled True
+    New-NetFirewallRule -Name "CustomSecurity-Port" -DisplayName "CustomSecurity-Port" -Description "CustomSecurity-135-137-138-139-Port" -Direction Inbound -LocalPort 135,137,138,139 -Protocol TCP -Action Block -Enabled True
   }
 }
 
@@ -561,13 +586,15 @@ main º¯Êı³ÌĞòÖ´ĞĞÈë¿Ú
 .EXAMPLE
 main
 #>
+
 F_Logging -Level Info -Msg "#################################################################################"
 F_Logging -Level Info -Msg "- @Desc: Windows Server °²È«ÅäÖÃ²ßÂÔ»ùÏß¼Ó¹Ì½Å±¾ [½«»áÔÚGithubÉÏ³ÖĞø¸üĞÂ-star]"
 F_Logging -Level Info -Msg "- @Author: WeiyiGeek"
 F_Logging -Level Info -Msg "- @Blog: https://www.weiyigeek.top"
 F_Logging -Level Info -Msg "- @Github: https://github.com/WeiyiGeek/SecOpsDev/tree/master/OS-²Ù×÷ÏµÍ³/Windows"
-$StartTime = Get-date -Format 'yyyy-M-d H:m:s'
 F_Logging -Level Info -Msg "#################################################################################`n"
+
+$StartTime = Get-date -Format 'yyyy-M-d H:m:s'
 
 # 1.µ±Ç°ÏµÍ³²ßÂÔÅäÖÃÎÄ¼şµ¼³ö (×¢Òâ±ØĞëÏµÍ³¹ÜÀíÔ±È¨ÏŞÔËĞĞ) 
 F_Logging -Level Info -Msg "- ÕıÔÚ¼ì²âµ±Ç°ÔËĞĞµÄPowerShellÖÕ¶ËÊÇ·ñ¹ÜÀíÔ±È¨ÏŞ...`n"
@@ -591,6 +618,10 @@ if ( -not(Test-Path -Path config.cfg) ) {
 $Config = Get-Content -path config.cfg
 $SecConfig = $Config.Clone()
 
+
+# 6.ÏµÍ³À©Õ¹Ïà¹ØÅäÖÃ°²È«¼Ó¹Ì (·ÀÖ¹·À»ğÇ½ÉèÖÃ²»ÉúĞ§)
+F_ExtentionReinforce
+
 # 3.½øĞĞÏµÍ³²ßÂÔÅäÖÃ°²È«¼Ó¹Ì
 F_SeceditReinforce
 
@@ -599,9 +630,6 @@ secedit /configure /db secconfig.sdb /cfg secconfig.cfg
 
 # 5.½øĞĞÏµÍ³×¢²á±íÏà¹ØÅäÖÃ°²È«¼Ó¹Ì
 F_SysRegistryReinforce
-
-# 6.ÏµÍ³À©Õ¹Ïà¹ØÅäÖÃ°²È«¼Ó¹Ì
-F_ExtentionReinforce
 
 # 7.³ÌĞòÖ´ĞĞÍê±Ï
 $EndTime = Get-date -Format 'yyyy-M-d H:m:s'
