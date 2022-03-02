@@ -1,30 +1,30 @@
 #######################################################
 # @Author: WeiyiGeek
-# @Description:  Windows Server °²È«ÅäÖÃ²ßÂÔ»ùÏß¼ì²â½Å±¾
-# @Create Time:  2019Äê5ÔÂ6ÈÕ 11:04:42
+# @Description:  Windows Server å®‰å…¨é…ç½®ç­–ç•¥åŸºçº¿æ£€æµ‹è„šæœ¬
+# @Create Time:  2019å¹´5æœˆ6æ—¥ 11:04:42
 # @Last Modified time: 2021-11-15 11:06:31
 # @E-mail: master@weiyigeek.top
 # @Blog: https://www.weiyigeek.top
 # @wechat: WeiyiGeeker
-# @Github: https://github.com/WeiyiGeek/SecOpsDev/tree/master/OS-²Ù×÷ÏµÍ³/Windows/
+# @Github: https://github.com/WeiyiGeek/SecOpsDev/tree/master/OS-æ“ä½œç³»ç»Ÿ/Windows/
 # @Version: 1.8
 # @Runtime: Server 2019 / Windows 10
 #######################################################
 
 <#
 .SYNOPSIS
-Windows Server °²È«ÅäÖÃ²ßÂÔ»ùÏß¼ì²â½Å±¾ £¨½Å±¾½«»áÔÚGithubÉÏ³ÖĞø¸üĞÂ£©
+Windows Server å®‰å…¨é…ç½®ç­–ç•¥åŸºçº¿æ£€æµ‹è„šæœ¬ ï¼ˆè„šæœ¬å°†ä¼šåœ¨Githubä¸ŠæŒç»­æ›´æ–°ï¼‰
 
 .DESCRIPTION
-Windows Server ²Ù×÷ÏµÍ³ÅäÖÃ²ßÂÔºË²é (·ûºÏµÈ±£3¼¶µÄ¹Ø¼ü¼ì²éÏî)
+Windows Server æ“ä½œç³»ç»Ÿé…ç½®ç­–ç•¥æ ¸æŸ¥ (ç¬¦åˆç­‰ä¿3çº§çš„å…³é”®æ£€æŸ¥é¡¹)
 
 .EXAMPLE
 WindowsSecurityBaseLine.ps1 -Executor WeiyiGeek -MsrcUpdate False
-- Executor : ½Å±¾Ö´ĞĞÕß
-- MsrcUpdate : ÊÇ·ñÔÚÏßÀ­È¡Î¢Èí°²È«ÖĞĞÄµÄ·şÎñÆ÷°²È«²¹¶¡ÁĞ±íĞÅÏ¢(½¨ÒéÒ»Ì¨Ö÷»úÀ­È¡ºÃÖ®ºó½«WSUSList.jsonºÍWSUSListId.json¿½±´µ½µ±Ç°½Å±¾Í¬¼¶Ä¿Â¼ÏÂ)
+- Executor : è„šæœ¬æ‰§è¡Œè€…
+- MsrcUpdate : æ˜¯å¦åœ¨çº¿æ‹‰å–å¾®è½¯å®‰å…¨ä¸­å¿ƒçš„æœåŠ¡å™¨å®‰å…¨è¡¥ä¸åˆ—è¡¨ä¿¡æ¯(å»ºè®®ä¸€å°ä¸»æœºæ‹‰å–å¥½ä¹‹åå°†WSUSList.jsonå’ŒWSUSListId.jsonæ‹·è´åˆ°å½“å‰è„šæœ¬åŒçº§ç›®å½•ä¸‹)
 
 .NOTES
-×¢Òâ:²»Í¬µÄ°æ±¾²Ù×÷ÏµÍ³ÒÔÏÂÄ³Ğ©¹Ø¼üÏî¿ÉÄÜ»á²»´æÔÚ»áÓĞÒ»Ğ©¾¯¸æ(ĞèÒª´ó¼ÒÌá½»issue£¬¹²Í¬Íê³É)¡£
+æ³¨æ„:ä¸åŒçš„ç‰ˆæœ¬æ“ä½œç³»ç»Ÿä»¥ä¸‹æŸäº›å…³é”®é¡¹å¯èƒ½ä¼šä¸å­˜åœ¨ä¼šæœ‰ä¸€äº›è­¦å‘Š(éœ€è¦å¤§å®¶æäº¤issueï¼Œå…±åŒå®Œæˆ)ã€‚
 #>
 [Cmdletbinding()]
 param(
@@ -32,21 +32,21 @@ param(
   [Boolean]$MsrcUpdate
 )
 
-# * ÎÄ¼şÊä³öÄ¬ÈÏÎªUTF-8¸ñÊ½
+# * æ–‡ä»¶è¾“å‡ºé»˜è®¤ä¸ºUTF-8æ ¼å¼
 $PSDefaultParameterValues['Out-File:Encoding'] = 'utf8'
 
 
 ################################################################################################################################
 # **********************#
-# * È«¾Ö¹«ÓÃ¹¤¾ßÒÀÀµº¯Êı  *  
+# * å…¨å±€å…¬ç”¨å·¥å…·ä¾èµ–å‡½æ•°  *  
 # **********************#
 Function F_IsCurrentUserAdmin
 { 
 <#
 .SYNOPSIS
-F_IsCurrentUserAdmin º¯Êı£ºÈ«¾Ö¹«ÓÃ¹¤¾ßÒÀÀµ¡£
+F_IsCurrentUserAdmin å‡½æ•°ï¼šå…¨å±€å…¬ç”¨å·¥å…·ä¾èµ–ã€‚
 .DESCRIPTION
-ÅĞ¶Ïµ±Ç°ÔËĞĞµÄpowershellÖÕ¶ËÊÇ·ñ¹ÜÀíÔ±Ö´ĞĞ,·µ»ØÖµ true »òÕß false
+åˆ¤æ–­å½“å‰è¿è¡Œçš„powershellç»ˆç«¯æ˜¯å¦ç®¡ç†å‘˜æ‰§è¡Œ,è¿”å›å€¼ true æˆ–è€… false
 .EXAMPLE
 F_IsCurrentUserAdmin
 #>
@@ -57,11 +57,11 @@ F_IsCurrentUserAdmin
 function F_Logging {
 <#
 .SYNOPSIS
-F_Logging ÈÕÖ¾Êä³öº¯Êı
+F_Logging æ—¥å¿—è¾“å‡ºå‡½æ•°
 .DESCRIPTION
-ÓÃÓÚÊä³ö½Å±¾Ö´ĞĞ½á¹û²¢°´ÕÕ²»Í¬µÄÈÕÖ¾µÈ¼¶Êä³öÏÔÊ¾µ½¿Í»§ÖÕ¶ËÉÏ¡£
+ç”¨äºè¾“å‡ºè„šæœ¬æ‰§è¡Œç»“æœå¹¶æŒ‰ç…§ä¸åŒçš„æ—¥å¿—ç­‰çº§è¾“å‡ºæ˜¾ç¤ºåˆ°å®¢æˆ·ç»ˆç«¯ä¸Šã€‚
 .EXAMPLE
-F_Logging -Level [Info|Warning|Error] -Msg "²âÊÔÊä³ö×Ö·û´®"
+F_Logging -Level [Info|Warning|Error] -Msg "æµ‹è¯•è¾“å‡ºå­—ç¬¦ä¸²"
 #>
   param (
     [Parameter(Mandatory=$true)]$Msg,
@@ -79,7 +79,7 @@ F_Logging -Level [Info|Warning|Error] -Msg "²âÊÔÊä³ö×Ö·û´®"
       Write-Host "[ERROR] ${Msg}" -ForegroundColor Red;
     }
     Default {
-      Write-Host "[*] F_Logging ÈÕÖ¾ Level µÈ¼¶´íÎó`n Useage£º F_Logging -Level [Info|Warning|Error] -Msg '²âÊÔÊä³ö×Ö·û´®'" -ForegroundColor Red;
+      Write-Host "[*] F_Logging æ—¥å¿— Level ç­‰çº§é”™è¯¯`n Useageï¼š F_Logging -Level [Info|Warning|Error] -Msg 'æµ‹è¯•è¾“å‡ºå­—ç¬¦ä¸²'" -ForegroundColor Red;
     }
   }
 }
@@ -87,11 +87,11 @@ F_Logging -Level [Info|Warning|Error] -Msg "²âÊÔÊä³ö×Ö·û´®"
 function F_Tools {
 <#
 .SYNOPSIS
-F_Tools ¼ì²â¶Ô±Èº¯Êı
+F_Tools æ£€æµ‹å¯¹æ¯”å‡½æ•°
 .DESCRIPTION
-ÑéÖ¤ÅĞ¶Ï´«ÈëµÄ×Ö¶ÎÊÇ·ñÓë°²È«¼Ó¹Ì×Ö¶ÎÒ»ÖÂ
+éªŒè¯åˆ¤æ–­ä¼ å…¥çš„å­—æ®µæ˜¯å¦ä¸å®‰å…¨åŠ å›ºå­—æ®µä¸€è‡´
 .EXAMPLE
-F_Tools -Key "ItemDemo" -Value "2" -Operator "eq" -DefaultValue "1"  -Msg "¶Ô±ÈItemDemo×Ö¶ÎÖµÓëÔ¤ÉèÖµ"
+F_Tools -Key "ItemDemo" -Value "2" -Operator "eq" -DefaultValue "1"  -Msg "å¯¹æ¯”ItemDemoå­—æ®µå€¼ä¸é¢„è®¾å€¼"
 #>
   param (
     [Parameter(Mandatory=$true)][String]$Key,
@@ -103,48 +103,48 @@ F_Tools -Key "ItemDemo" -Value "2" -Operator "eq" -DefaultValue "1"  -Msg "¶Ô±ÈI
   
   if ( $Operator -eq  "eq" ) {
     if ( $Value -eq $DefaultValue ) {
-      $Result = @{"$($Key)"="[ºÏ¸ñÏî]|$($Value)|$($DefaultValue)|$($Msg)-¡¾·ûºÏ¡¿µÈ¼¶±£»¤±ê×¼."}
-      Write-Host "$($Key)"=" [ºÏ¸ñÏî]|$($Value)|$($DefaultValue)|$($Msg)-¡¾·ûºÏ¡¿µÈ¼¶±£»¤±ê×¼." -ForegroundColor White
+      $Result = @{"$($Key)"="[åˆæ ¼é¡¹]|$($Value)|$($DefaultValue)|$($Msg)-ã€ç¬¦åˆã€‘ç­‰çº§ä¿æŠ¤æ ‡å‡†."}
+      Write-Host "$($Key)"=" [åˆæ ¼é¡¹]|$($Value)|$($DefaultValue)|$($Msg)-ã€ç¬¦åˆã€‘ç­‰çº§ä¿æŠ¤æ ‡å‡†." -ForegroundColor White
       return $Result
     } else {
-      $Result = @{"$($Key)"="[Òì³£Ïî]|$($Value)|$($DefaultValue)|$($Msg)-¡¾²»·ûºÏ¡¿µÈ¼¶±£»¤±ê×¼."}
-      Write-Host "$($Key)"=" [Òì³£Ïî]|$($Value)|$($DefaultValue)|$($Msg)-¡¾²»·ûºÏ¡¿µÈ¼¶±£»¤±ê×¼." -ForegroundColor red
+      $Result = @{"$($Key)"="[å¼‚å¸¸é¡¹]|$($Value)|$($DefaultValue)|$($Msg)-ã€ä¸ç¬¦åˆã€‘ç­‰çº§ä¿æŠ¤æ ‡å‡†."}
+      Write-Host "$($Key)"=" [å¼‚å¸¸é¡¹]|$($Value)|$($DefaultValue)|$($Msg)-ã€ä¸ç¬¦åˆã€‘ç­‰çº§ä¿æŠ¤æ ‡å‡†." -ForegroundColor red
       return $Result
     }
 
   } elseif ($Operator -eq  "ne" ) {
 
     if ( $Value -ne $DefaultValue ) {
-      $Result = @{"$($Key)"="[ºÏ¸ñÏî]|$($Value)|$($DefaultValue)|$($Msg)-¡¾·ûºÏ¡¿µÈ¼¶±£»¤±ê×¼."}
-      Write-Host "$($Key)"=" [ºÏ¸ñÏî]|$($Value)|$($DefaultValue)|$($Msg)-¡¾·ûºÏ¡¿µÈ¼¶±£»¤±ê×¼." -ForegroundColor White
+      $Result = @{"$($Key)"="[åˆæ ¼é¡¹]|$($Value)|$($DefaultValue)|$($Msg)-ã€ç¬¦åˆã€‘ç­‰çº§ä¿æŠ¤æ ‡å‡†."}
+      Write-Host "$($Key)"=" [åˆæ ¼é¡¹]|$($Value)|$($DefaultValue)|$($Msg)-ã€ç¬¦åˆã€‘ç­‰çº§ä¿æŠ¤æ ‡å‡†." -ForegroundColor White
       return $Result
     } else {
-      $Result = @{"$($Key)"="[Òì³£Ïî]|$($Value)|$($DefaultValue)|$($Msg)-¡¾²»·ûºÏ¡¿µÈ¼¶±£»¤±ê×¼."}
-      Write-Host "$($Key)"=" [Òì³£Ïî]|$($Value)|$($DefaultValue)|$($Msg)-¡¾²»·ûºÏ¡¿µÈ¼¶±£»¤±ê×¼." -ForegroundColor red
+      $Result = @{"$($Key)"="[å¼‚å¸¸é¡¹]|$($Value)|$($DefaultValue)|$($Msg)-ã€ä¸ç¬¦åˆã€‘ç­‰çº§ä¿æŠ¤æ ‡å‡†."}
+      Write-Host "$($Key)"=" [å¼‚å¸¸é¡¹]|$($Value)|$($DefaultValue)|$($Msg)-ã€ä¸ç¬¦åˆã€‘ç­‰çº§ä¿æŠ¤æ ‡å‡†." -ForegroundColor red
       return $Result
     }
 
   } elseif ($Operator -eq  "le") {
 
     if ( $Value -le $DefaultValue ) {
-      $Result = @{"$($Key)"="[ºÏ¸ñÏî]|$($Value)|$($DefaultValue)|$($Msg)-¡¾·ûºÏ¡¿µÈ¼¶±£»¤±ê×¼."}
-      Write-Host "$($Key)"=" [ºÏ¸ñÏî]|$($Value)|$($DefaultValue)|$($Msg)-¡¾·ûºÏ¡¿µÈ¼¶±£»¤±ê×¼." -ForegroundColor White
+      $Result = @{"$($Key)"="[åˆæ ¼é¡¹]|$($Value)|$($DefaultValue)|$($Msg)-ã€ç¬¦åˆã€‘ç­‰çº§ä¿æŠ¤æ ‡å‡†."}
+      Write-Host "$($Key)"=" [åˆæ ¼é¡¹]|$($Value)|$($DefaultValue)|$($Msg)-ã€ç¬¦åˆã€‘ç­‰çº§ä¿æŠ¤æ ‡å‡†." -ForegroundColor White
       return $Result
     } else {
-      $Result = @{"$($Key)"="[Òì³£Ïî]|$($Value)|$($DefaultValue)|$($Msg)-¡¾²»·ûºÏ¡¿µÈ¼¶±£»¤±ê×¼."}
-      Write-Host "$($Key)"=" [Òì³£Ïî]|$($Value)|$($DefaultValue)|$($Msg)-¡¾²»·ûºÏ¡¿µÈ¼¶±£»¤±ê×¼." -ForegroundColor red
+      $Result = @{"$($Key)"="[å¼‚å¸¸é¡¹]|$($Value)|$($DefaultValue)|$($Msg)-ã€ä¸ç¬¦åˆã€‘ç­‰çº§ä¿æŠ¤æ ‡å‡†."}
+      Write-Host "$($Key)"=" [å¼‚å¸¸é¡¹]|$($Value)|$($DefaultValue)|$($Msg)-ã€ä¸ç¬¦åˆã€‘ç­‰çº§ä¿æŠ¤æ ‡å‡†." -ForegroundColor red
       return $Result
     }
 
   } elseif ($Operator -eq "ge") {
 
     if ( $Value -ge $DefaultValue ) {
-      $Result =  @{"$($Key)"="[ºÏ¸ñÏî]|$($Value)|$($DefaultValue)|$($Msg)-¡¾·ûºÏ¡¿µÈ¼¶±£»¤±ê×¼."}
-      Write-Host "$($Key)"=" [ºÏ¸ñÏî]|$($Value)|$($DefaultValue)|$($Msg)-¡¾·ûºÏ¡¿µÈ¼¶±£»¤±ê×¼." -ForegroundColor White
+      $Result =  @{"$($Key)"="[åˆæ ¼é¡¹]|$($Value)|$($DefaultValue)|$($Msg)-ã€ç¬¦åˆã€‘ç­‰çº§ä¿æŠ¤æ ‡å‡†."}
+      Write-Host "$($Key)"=" [åˆæ ¼é¡¹]|$($Value)|$($DefaultValue)|$($Msg)-ã€ç¬¦åˆã€‘ç­‰çº§ä¿æŠ¤æ ‡å‡†." -ForegroundColor White
       return $Result
     } else {
-      $Result = @{"$($Key)"="[Òì³£Ïî]|$($Value)|$($DefaultValue)|$($Msg)-¡¾²»·ûºÏ¡¿µÈ¼¶±£»¤±ê×¼."}
-      Write-Host "$($Key)"=" [Òì³£Ïî]|$($Value)|$($DefaultValue)|$($Msg)-¡¾²»·ûºÏ¡¿µÈ¼¶±£»¤±ê×¼." -ForegroundColor red
+      $Result = @{"$($Key)"="[å¼‚å¸¸é¡¹]|$($Value)|$($DefaultValue)|$($Msg)-ã€ä¸ç¬¦åˆã€‘ç­‰çº§ä¿æŠ¤æ ‡å‡†."}
+      Write-Host "$($Key)"=" [å¼‚å¸¸é¡¹]|$($Value)|$($DefaultValue)|$($Msg)-ã€ä¸ç¬¦åˆã€‘ç­‰çº§ä¿æŠ¤æ ‡å‡†." -ForegroundColor red
       return $Result
     }
   }
@@ -164,7 +164,7 @@ function F_GetRegPropertyValue {
     $Result = F_Tools -Key "Registry::$($Name)" -Value $Value -Operator $Operator -DefaultValue $DefaultValue  -Msg $Msg
     return $Result
   } catch {
-   $Result = @{"Registry::$($Name)"="[Òì³£Ïî]|$($Key)ÖĞ$($Name)²»´æÔÚ¸ÃÏî|$($DefaultValue)|$($Msg)"}
+   $Result = @{"Registry::$($Name)"="[å¼‚å¸¸é¡¹]|$($Key)ä¸­$($Name)ä¸å­˜åœ¨è¯¥é¡¹|$($DefaultValue)|$($Msg)"}
    Write-Host $Result.Values -ForegroundColor Red
    return $Result
   }
@@ -181,32 +181,32 @@ Function F_UrlRequest {
 
 ################################################################################################################################
 #
-# * ²Ù×÷ÏµÍ³»ù´¡ĞÅÏ¢¼ÇÂ¼º¯Êı * #
+# * æ“ä½œç³»ç»ŸåŸºç¡€ä¿¡æ¯è®°å½•å‡½æ•° * #
 #
-# - ÏµÍ³ĞÅÏ¢¼ÇÂ¼º¯Êı - #
+# - ç³»ç»Ÿä¿¡æ¯è®°å½•å‡½æ•° - #
 $SysInfo = @{}
-# - Get-Computer ÃüÁîÊ¹ÓÃ 
-# Tips £ºÔÚ Server 2019 ÒÔ¼° Windows 10 ÒÔÏÂÏµÍ³ÎŞ¸ÃÃüÁî
+# - Get-Computer å‘½ä»¤ä½¿ç”¨ 
+# Tips ï¼šåœ¨ Server 2019 ä»¥åŠ Windows 10 ä»¥ä¸‹ç³»ç»Ÿæ— è¯¥å‘½ä»¤
 # $Item = 'WindowsProductName','WindowsEditionId','WindowsInstallationType','WindowsCurrentVersion','WindowsVersion','WindowsProductId','BiosManufacturer','BiosFirmwareType','BiosName','BiosVersion','BiosBIOSVersion','BiosSeralNumber','CsBootupState','OsBootDevice','BiosReleaseDate','CsName','CsAdminPasswordStatus','CsManufacturer','CsModel','OsName','OsType','OsProductType','OsServerLevel','OsArchitecture','CsSystemType','OsOperatingSystemSKU','OsVersion','OsBuildNumber','OsSerialNumber','OsInstallDate','OsSystemDevice','OsSystemDirectory','OsCountryCode','OsCodeSet','OsLocaleID','OsCurrentTimeZone','TimeZone','OsLanguage','OsLocalDateTime','OsLastBootUpTime','CsProcessors','OsBuildType','CsNumberOfProcessors','CsNumberOfLogicalProcessors','OsMaxNumberOfProcesses','OsTotalVisibleMemorySize','OsFreePhysicalMemory','OsTotalVirtualMemorySize','OsFreeVirtualMemory','OsInUseVirtualMemory','OsMaxProcessMemorySize','CsNetworkAdapters','OsHotFixes'
-# - Systeminfo ÃüÁîÊ¹ÓÃ(Í¨ÓÃ-ÍÆ¼ö)
+# - Systeminfo å‘½ä»¤ä½¿ç”¨(é€šç”¨-æ¨è)
 $Item = 'Hostname','OSName','OSVersion','OSManufacturer','OSConfiguration','OS Build Type','RegisteredOwner','RegisteredOrganization','Product ID','Original Install Date','System Boot Time','System Manufacturer','System Model','System Type','Processor(s)','BIOS Version','Windows Directory','System Directory','Boot Device','System Locale','Input Locale','Time Zone','Total Physical Memory','Available Physical Memory','Virtual Memory: Max Size','Virtual Memory: Available','Virtual Memory: In Use','Page File Location(s)','Domain','Logon Server','Hotfix(s)','Network Card(s)'
 Function F_SysInfo {
-  # - µ±Ç°ÏµÍ³¼°¼ÆËã»úÏà¹ØĞÅÏ¢ (Primary)
-  # Server 2019 ÒÔ¼° Windows 10 ÊÊÓÃ
+  # - å½“å‰ç³»ç»ŸåŠè®¡ç®—æœºç›¸å…³ä¿¡æ¯ (Primary)
+  # Server 2019 ä»¥åŠ Windows 10 é€‚ç”¨
   # $Computer = Get-ComputerInfo
   $Computer = systeminfo.exe /FO CSV /S $env:COMPUTERNAME |Select-Object -Skip 1 | ConvertFrom-CSV -Header $Item
   foreach( $key in $Item) {
     $SysInfo += @{"$($key)"=$Computer.$key}
   }
-  # - Í¨ÓÃÉèÖÃÕë¶Ô²ÉÓÃ`systeminfo.exe`ÃüÁî·½Ê½
+  # - é€šç”¨è®¾ç½®é’ˆå¯¹é‡‡ç”¨`systeminfo.exe`å‘½ä»¤æ–¹å¼
   $SysInfo += @{"WindowsProductName"="$($SysInfo.OSName)"}
   $SysInfo.OsVersion=($Sysinfo.OSVersion -split " ")[0]
   $SysInfo += @{"CsSystemType"=($Sysinfo."System Type" -split " ")[0]}
 
-  # - µ±Ç°ÏµÍ³ PowerShell °æ±¾ĞÅÏ¢ÒÔ¼°ÊÇ·ñÎªĞéÄâ»ú
+  # - å½“å‰ç³»ç»Ÿ PowerShell ç‰ˆæœ¬ä¿¡æ¯ä»¥åŠæ˜¯å¦ä¸ºè™šæ‹Ÿæœº
   $SysInfo += @{"PSVersion"=$PSVersionTable.PSEdition+"-"+$PSVersionTable.PSVersion}
 
-  # - ÑéÖ¤µ±Ç°¼ÆËã»ú²úÆ·¼°Æä°æ±¾ (Primary)
+  # - éªŒè¯å½“å‰è®¡ç®—æœºäº§å“åŠå…¶ç‰ˆæœ¬ (Primary)
   $Flag = $SysInfo.WindowsProductName -match  "Windows 8.1|Windows 10|Server 2008|Server 2012|Server 2016|Server 2019"
   $ProductName = "$($Matches.Values)"
   if ( $ProductName.Contains("Windows")) {
@@ -218,20 +218,20 @@ Function F_SysInfo {
     $SysInfo += @{"ProductName"=$ProductName}
   }
 
-  # - ÑéÖ¤µ±Ç°¼ÆËã»ú²úÆ·ÊÇÊÇÎïÀí»ú»¹ÊÇĞéÄâ»ú (Primary)
+  # - éªŒè¯å½“å‰è®¡ç®—æœºäº§å“æ˜¯æ˜¯ç‰©ç†æœºè¿˜æ˜¯è™šæ‹Ÿæœº (Primary)
   $ComputerType = get-wmiobject win32_computersystem
   if ($ComputerType.Manufacturer -match "VMware"){
-    $SysInfo += @{"ComputerType"="ĞéÄâ»ú - $($ComputerType.Model)"}
+    $SysInfo += @{"ComputerType"="è™šæ‹Ÿæœº - $($ComputerType.Model)"}
   } else {
-    $SysInfo += @{"ComputerType"="ÎïÀí»ú - $($ComputerType.Model)"}
+    $SysInfo += @{"ComputerType"="ç‰©ç†æœº - $($ComputerType.Model)"}
   }
   
-  # # - µ±Ç°¼ÆËã»úÎÂ¶ÈÖµĞÅÏ¢¼ÇÂ¼ £¨WINDOWSERVER2019Ö§³Ö£©
+  # # - å½“å‰è®¡ç®—æœºæ¸©åº¦å€¼ä¿¡æ¯è®°å½• ï¼ˆWINDOWSERVER2019æ”¯æŒï¼‰
   # Get-CimInstance -Namespace ROOT/WMI -Class MSAcpi_ThermalZoneTemperature | % { 
   #   $currentTempKelvin = $_.CurrentTemperature / 10 
   #   $currentTempCelsius = $currentTempKelvin - 273.15 
   #   $currentTempFahrenheit = (9/5) * $currentTempCelsius + 32 
-  #   $Temperature += "InstanceName: " + $_.InstanceName+ " ==>> " +  $currentTempCelsius.ToString() + " ÉãÊÏ¶È(C);  " + $currentTempFahrenheit.ToString() + " »ªÊÏ¶È(F) ; " + $currentTempKelvin + "¿ªÊÏ¶È(K) `n" 
+  #   $Temperature += "InstanceName: " + $_.InstanceName+ " ==>> " +  $currentTempCelsius.ToString() + " æ‘„æ°åº¦(C);  " + $currentTempFahrenheit.ToString() + " åæ°åº¦(F) ; " + $currentTempKelvin + "å¼€æ°åº¦(K) `n" 
   # }
   # $SysInfo += @{"Temperature"=$Temperature}
 
@@ -240,12 +240,12 @@ Function F_SysInfo {
 
 
 #
-# * - ¼ÆËã»úMac¼°IPµØÖ·ĞÅÏ¢º¯Êı * #
+# * - è®¡ç®—æœºMacåŠIPåœ°å€ä¿¡æ¯å‡½æ•° * #
 #
-#  * ÏµÍ³ÍøÂç¼°ÊÊÅäÆ÷ĞÅÏ¢±äÁ¿ * #
+#  * ç³»ç»Ÿç½‘ç»œåŠé€‚é…å™¨ä¿¡æ¯å˜é‡ * #
 $SysNetAdapter = @{}
 function F_SysNetAdapter {
-  # - ¼ÆËã»úMac¼°IPµØÖ·ĞÅÏ¢
+  # - è®¡ç®—æœºMacåŠIPåœ°å€ä¿¡æ¯
   $Adapter = Get-NetAdapter | Sort-Object -Property LinkSpeed
   foreach ( $Item in $Adapter) {
     $IPAddress = (Get-NetIPAddress -AddressFamily IPv4 -InterfaceIndex $Item.ifIndex).IPAddress
@@ -256,12 +256,12 @@ function F_SysNetAdapter {
 
 
 #
-# * - ¼ÆËã»úÏµÍ³´ÅÅÌÓë¿Õ¼äÊ£Óà²éÑ¯º¯Êı * #
+# * - è®¡ç®—æœºç³»ç»Ÿç£ç›˜ä¸ç©ºé—´å‰©ä½™æŸ¥è¯¢å‡½æ•° * #
 #
-# - ÏµÍ³´ÅÅÌÓë¿Õ¼äÊ£ÓàĞÅÏ¢ - #
+# - ç³»ç»Ÿç£ç›˜ä¸ç©ºé—´å‰©ä½™ä¿¡æ¯ - #
 $SysDisk = @{}
 function F_SysDisk {
-  # - ¼ÆËã»ú´ÅÅÌĞÅÏ¢
+  # - è®¡ç®—æœºç£ç›˜ä¿¡æ¯
   $Disk = Get-Disk
   foreach ( $Item in $Disk) {
     $SysDisk += @{"$($Item.SerialNumber)"="$($Item.Number) | $($Item.FriendlyName) | $($Item.HealthStatus)| $($Item.Size / [math]::Pow(1024,3)) GB | $($Item.PartitionStyle) |$($Item.OperationalStatus)"}
@@ -278,62 +278,62 @@ function F_SysDisk {
 
 
 #
-# * ÏµÍ³ÕËºÅ¼ì²éº¯Êı  * #
+# * ç³»ç»Ÿè´¦å·æ£€æŸ¥å‡½æ•°  * #
 #
-# - ÏµÍ³ÕË»§ĞÅÏ¢±äÁ¿ - # 
+# - ç³»ç»Ÿè´¦æˆ·ä¿¡æ¯å˜é‡ - # 
 $SysAccount = @{}
 Function F_SysAccount {
-  # - ÕË»§¼ì²é
+  # - è´¦æˆ·æ£€æŸ¥
   $Account = Get-WmiObject -Class Win32_UserAccount | Select-Object Name,AccountType,Caption,SID
-  Write-Host "* µ±Ç°ÏµÍ³´æÔÚµÄ $($Account.Length) ÃûÕË»§ : $($Account.Name)" -ForegroundColor Green
-  if($Acount.Length -ge 4 -and ($Account.sid  | Select-String -Pattern "^((?!(-500|-501|-503|-504)).)*$")) {
-    $Result = @{"SysAccount"="[Òì³£Ïî]-ÏµÍ³ÖĞ´æÔÚÆäËûÕËºÅÇë¼ì²é: $($Account.Name)"}
+  Write-Host "* å½“å‰ç³»ç»Ÿå­˜åœ¨çš„ $($Account.Length) åè´¦æˆ· : $($Account.Name)" -ForegroundColor Green
+  if($Account.Length -ge 4 -and ($Account.sid  | Select-String -Pattern "^((?!(-500|-501|-503|-504)).)*$")) {
+    $Result = @{"SysAccount"="[å¼‚å¸¸é¡¹]-ç³»ç»Ÿä¸­å­˜åœ¨å…¶ä»–è´¦å·è¯·æ£€æŸ¥: $($Account.Name)"}
     $SysAccount += $Result
   }else{
-    $Result = @{"SysAccount"="[ºÏ¸ñÏî]-ÏµÍ³ÖĞÎŞ¶àÓàÆäËûÕËºÅ";}
+    $Result = @{"SysAccount"="[åˆæ ¼é¡¹]-ç³»ç»Ÿä¸­æ— å¤šä½™å…¶ä»–è´¦å·";}
     $SysAccount += $Result
   }
   return $SysAccount
 }
 
 #
-# * ÏµÍ³ÕËºÅ²ßÂÔÅäÖÃºË²éº¯Êı  * #
+# * ç³»ç»Ÿè´¦å·ç­–ç•¥é…ç½®æ ¸æŸ¥å‡½æ•°  * #
 #
-# - ÏµÍ³ÕËºÅ²ßÂÔ - #
+# - ç³»ç»Ÿè´¦å·ç­–ç•¥ - #
 $SysAccountPolicy = @{
-  # + ÃÜÂë×î¶ÌÁô´æÆÚ
-  "MinimumPasswordAge" = @{operator="le";value=1;msg="ÃÜÂë×î¶ÌÁô´æÆÚ"}
-  # + ÃÜÂë×î³¤Áô´æÆÚ
-  "MaximumPasswordAge" = @{operator="le";value=90;msg="ÃÜÂë×î³¤Áô´æÆÚ"}
-  # + ÃÜÂë³¤¶È×îĞ¡Öµ
-  "MinimumPasswordLength" = @{operator="ge";value=14;msg="ÃÜÂë³¤¶È×îĞ¡Öµ"}
-  # + ÃÜÂë±ØĞë·ûºÏ¸´ÔÓĞÔÒªÇó
-  "PasswordComplexity" = @{operator="eq";value=1;msg="ÃÜÂë±ØĞë·ûºÏ¸´ÔÓĞÔÒªÇó²ßÂÔ"}
-  # + Ç¿ÖÆÃÜÂëÀúÊ· N¸ö¼Ç×¡µÄÃÜÂë
-  "PasswordHistorySize" = @{operator="ge";value=3;msg="Ç¿ÖÆÃÜÂëÀúÊ·¸ö¼Ç×¡µÄÃÜÂë"}
-  # + ÕË»§µÇÂ¼Ê§°ÜËø¶¨ãĞÖµN´ÎÊı
-  "LockoutBadCount" = @{operator="le";value=6;msg="ÕË»§µÇÂ¼Ê§°ÜËø¶¨ãĞÖµ´ÎÊı"}
-  # + ÕË»§Ëø¶¨Ê±¼ä(·ÖÖÓ)
-  "ResetLockoutCount" = @{operator="ge";value=15;msg="ÕË»§Ëø¶¨Ê±¼ä(·ÖÖÓ)"}
-  # + ¸´Î»ÕË»§Ëø¶¨¼ÆÊıÆ÷Ê±¼ä(·ÖÖÓ)
-  "LockoutDuration" = @{operator="ge";value=15;msg="¸´Î»ÕË»§Ëø¶¨¼ÆÊıÆ÷Ê±¼ä(·ÖÖÓ)"}
-  # + ÏÂ´ÎµÇÂ¼±ØĞë¸ü¸ÄÃÜÂë
-  "RequireLogonToChangePassword" = @{operator="eq";value=0;msg="ÏÂ´ÎµÇÂ¼±ØĞë¸ü¸ÄÃÜÂë"}
-  # + Ç¿ÖÆ¹ıÆÚ
-  "ForceLogoffWhenHourExpire" = @{operator="eq";value=0;msg="Ç¿ÖÆ¹ıÆÚ"}
-  # + µ±Ç°¹ÜÀíÕËºÅµÇÂ½Ãû³Æ
-  "NewAdministratorName" = @{operator="ne";value='"Administrator"';msg="µ±Ç°ÏµÍ³Ä¬ÈÏ¹ÜÀíÕËºÅµÇÂ½Ãû³Æ²ßÂÔ"}
-  # + µ±Ç°À´±öÓÃ»§µÇÂ½Ãû³Æ
-  "NewGuestName" = @{operator="ne";value='"Guest"';msg="µ±Ç°ÏµÍ³Ä¬ÈÏÀ´±öÓÃ»§µÇÂ½Ãû³Æ²ßÂÔ"}
-  # + ¹ÜÀíÔ±ÊÇ·ñ±»ÆôÓÃ
-  "EnableAdminAccount" = @{operator="eq";value=1;msg="¹ÜÀíÔ±ÕË»§Í£ÓÃÓëÆôÓÃ²ßÂÔ"}
-  # + À´±öÓÃ»§ÊÇ·ñÆôÓÃ
-  "EnableGuestAccount" = @{operator="eq";value=0;msg="À´±öÕË»§Í£ÓÃÓëÆôÓÃ²ßÂÔ"}
-  # + Ö¸Ê¾ÊÇ·ñÊ¹ÓÃ¿ÉÄæ¼ÓÃÜÀ´´æ´¢ÃÜÂëÒ»°ã½ûÓÃ(³ı·ÇÓ¦ÓÃ³ÌĞòÒªÇó³¬¹ı±£»¤ÃÜÂëĞÅÏ¢µÄĞèÒª)
-  "ClearTextPassword" = @{operator="eq";value=0;msg="Ö¸Ê¾ÊÇ·ñÊ¹ÓÃ¿ÉÄæ¼ÓÃÜÀ´´æ´¢ÃÜÂë (³ı·ÇÓ¦ÓÃ³ÌĞòÒªÇó³¬¹ı±£»¤ÃÜÂëĞÅÏ¢µÄĞèÒª)"}
-  # + ÆôÓÃÊ±´ËÉèÖÃÔÊĞíÄäÃûÓÃ»§²éÑ¯±¾µØLSA²ßÂÔ(0¹Ø±Õ)
-  "LSAAnonymousNameLookup" = @{operator="eq";value=0;msg="ÆôÓÃÊ±´ËÉèÖÃÔÊĞíÄäÃûÓÃ»§²éÑ¯±¾µØLSA²ßÂÔ (0¹Ø±Õ)"}
-  # + ¼ì²é½á¹û´æ·ÅµÄ¿ÕÊı×é
+  # + å¯†ç æœ€çŸ­ç•™å­˜æœŸ
+  "MinimumPasswordAge" = @{operator="le";value=1;msg="å¯†ç æœ€çŸ­ç•™å­˜æœŸ"}
+  # + å¯†ç æœ€é•¿ç•™å­˜æœŸ
+  "MaximumPasswordAge" = @{operator="le";value=90;msg="å¯†ç æœ€é•¿ç•™å­˜æœŸ"}
+  # + å¯†ç é•¿åº¦æœ€å°å€¼
+  "MinimumPasswordLength" = @{operator="ge";value=14;msg="å¯†ç é•¿åº¦æœ€å°å€¼"}
+  # + å¯†ç å¿…é¡»ç¬¦åˆå¤æ‚æ€§è¦æ±‚
+  "PasswordComplexity" = @{operator="eq";value=1;msg="å¯†ç å¿…é¡»ç¬¦åˆå¤æ‚æ€§è¦æ±‚ç­–ç•¥"}
+  # + å¼ºåˆ¶å¯†ç å†å² Nä¸ªè®°ä½çš„å¯†ç 
+  "PasswordHistorySize" = @{operator="ge";value=3;msg="å¼ºåˆ¶å¯†ç å†å²ä¸ªè®°ä½çš„å¯†ç "}
+  # + è´¦æˆ·ç™»å½•å¤±è´¥é”å®šé˜ˆå€¼Næ¬¡æ•°
+  "LockoutBadCount" = @{operator="le";value=6;msg="è´¦æˆ·ç™»å½•å¤±è´¥é”å®šé˜ˆå€¼æ¬¡æ•°"}
+  # + è´¦æˆ·é”å®šæ—¶é—´(åˆ†é’Ÿ)
+  "ResetLockoutCount" = @{operator="ge";value=15;msg="è´¦æˆ·é”å®šæ—¶é—´(åˆ†é’Ÿ)"}
+  # + å¤ä½è´¦æˆ·é”å®šè®¡æ•°å™¨æ—¶é—´(åˆ†é’Ÿ)
+  "LockoutDuration" = @{operator="ge";value=15;msg="å¤ä½è´¦æˆ·é”å®šè®¡æ•°å™¨æ—¶é—´(åˆ†é’Ÿ)"}
+  # + ä¸‹æ¬¡ç™»å½•å¿…é¡»æ›´æ”¹å¯†ç 
+  "RequireLogonToChangePassword" = @{operator="eq";value=0;msg="ä¸‹æ¬¡ç™»å½•å¿…é¡»æ›´æ”¹å¯†ç "}
+  # + å¼ºåˆ¶è¿‡æœŸ
+  "ForceLogoffWhenHourExpire" = @{operator="eq";value=0;msg="å¼ºåˆ¶è¿‡æœŸ"}
+  # + å½“å‰ç®¡ç†è´¦å·ç™»é™†åç§°
+  "NewAdministratorName" = @{operator="ne";value='"Administrator"';msg="å½“å‰ç³»ç»Ÿé»˜è®¤ç®¡ç†è´¦å·ç™»é™†åç§°ç­–ç•¥"}
+  # + å½“å‰æ¥å®¾ç”¨æˆ·ç™»é™†åç§°
+  "NewGuestName" = @{operator="ne";value='"Guest"';msg="å½“å‰ç³»ç»Ÿé»˜è®¤æ¥å®¾ç”¨æˆ·ç™»é™†åç§°ç­–ç•¥"}
+  # + ç®¡ç†å‘˜æ˜¯å¦è¢«å¯ç”¨
+  "EnableAdminAccount" = @{operator="eq";value=1;msg="ç®¡ç†å‘˜è´¦æˆ·åœç”¨ä¸å¯ç”¨ç­–ç•¥"}
+  # + æ¥å®¾ç”¨æˆ·æ˜¯å¦å¯ç”¨
+  "EnableGuestAccount" = @{operator="eq";value=0;msg="æ¥å®¾è´¦æˆ·åœç”¨ä¸å¯ç”¨ç­–ç•¥"}
+  # + æŒ‡ç¤ºæ˜¯å¦ä½¿ç”¨å¯é€†åŠ å¯†æ¥å­˜å‚¨å¯†ç ä¸€èˆ¬ç¦ç”¨(é™¤éåº”ç”¨ç¨‹åºè¦æ±‚è¶…è¿‡ä¿æŠ¤å¯†ç ä¿¡æ¯çš„éœ€è¦)
+  "ClearTextPassword" = @{operator="eq";value=0;msg="æŒ‡ç¤ºæ˜¯å¦ä½¿ç”¨å¯é€†åŠ å¯†æ¥å­˜å‚¨å¯†ç  (é™¤éåº”ç”¨ç¨‹åºè¦æ±‚è¶…è¿‡ä¿æŠ¤å¯†ç ä¿¡æ¯çš„éœ€è¦)"}
+  # + å¯ç”¨æ—¶æ­¤è®¾ç½®å…è®¸åŒ¿åç”¨æˆ·æŸ¥è¯¢æœ¬åœ°LSAç­–ç•¥(0å…³é—­)
+  "LSAAnonymousNameLookup" = @{operator="eq";value=0;msg="å¯ç”¨æ—¶æ­¤è®¾ç½®å…è®¸åŒ¿åç”¨æˆ·æŸ¥è¯¢æœ¬åœ°LSAç­–ç•¥ (0å…³é—­)"}
+  # + æ£€æŸ¥ç»“æœå­˜æ”¾çš„ç©ºæ•°ç»„
   "CheckResults" = @()
   }
 Function F_SysAccountPolicy {
@@ -341,7 +341,7 @@ Function F_SysAccountPolicy {
   for ($i=0;$i -lt $Count; $i++){
     $Line = $Config[$i] -split " = "
     if ($SysAccountPolicy.ContainsKey("$($Line[0])")) {
-      $Result = F_Tools -Key "SysAccountPolicy::$($Line[0])" -Value $Line[1] -Operator $SysAccountPolicy["$($Line[0])"].Operator -DefaultValue $SysAccountPolicy["$($Line[0])"].Value  -Msg "ÏµÍ³ÕËºÅ²ßÂÔÅäÖÃ-$($SysAccountPolicy["$($Line[0])"].Msg)"
+      $Result = F_Tools -Key "SysAccountPolicy::$($Line[0])" -Value $Line[1] -Operator $SysAccountPolicy["$($Line[0])"].Operator -DefaultValue $SysAccountPolicy["$($Line[0])"].Value  -Msg "ç³»ç»Ÿè´¦å·ç­–ç•¥é…ç½®-$($SysAccountPolicy["$($Line[0])"].Msg)"
       $SysAccountPolicy['CheckResults'] += $Result
     }
     if ( $Line[0] -eq "[Event Audit]" ) { break;}
@@ -352,29 +352,29 @@ Function F_SysAccountPolicy {
 
 
 #
-# * ÏµÍ³ÊÂ¼şÉóºË²ßÂÔÅäÖÃºË²éº¯Êı  * #
+# * ç³»ç»Ÿäº‹ä»¶å®¡æ ¸ç­–ç•¥é…ç½®æ ¸æŸ¥å‡½æ•°  * #
 #
-# - ÏµÍ³ÊÂ¼şÉóºË²ßÂÔ - #
+# - ç³»ç»Ÿäº‹ä»¶å®¡æ ¸ç­–ç•¥ - #
 $SysEventAuditPolicy  = @{
-  # + ÉóºËÏµÍ³ÊÂ¼ş(0) [³É¹¦(1)¡¢Ê§°Ü(2)] (3)
-  AuditSystemEvents = @{operator="eq";value=3;msg="ÉóºËÏµÍ³ÊÂ¼ş"}
-  # + ÉóºËµÇÂ¼ÊÂ¼ş ³É¹¦¡¢Ê§°Ü
-  AuditLogonEvents = @{operator="eq";value=3;msg="ÉóºËµÇÂ¼ÊÂ¼ş"}
-  # + ÉóºË¶ÔÏó·ÃÎÊ ³É¹¦¡¢Ê§°Ü
-  AuditObjectAccess = @{operator="eq";value=3;msg="ÉóºË¶ÔÏó·ÃÎÊ"}
-  # + ÉóºËÌØÈ¨Ê¹ÓÃ Ê§°Ü
-  AuditPrivilegeUse = @{operator="ge";value=2;msg="ÉóºËÌØÈ¨Ê¹ÓÃ"}
-  # + ÉóºË²ßÂÔ¸ü¸Ä ³É¹¦¡¢Ê§°Ü
-  AuditPolicyChange = @{operator="eq";value=3;msg="ÉóºË²ßÂÔ¸ü¸Ä"}
-  # + ÉóºËÕË»§¹ÜÀí ³É¹¦¡¢Ê§°Ü
-  AuditAccountManage = @{operator="eq";value=3;msg="ÉóºËÕË»§¹ÜÀí"}
-  # + ÉóºË¹ı³Ì×·×Ù Ê§°Ü
-  AuditProcessTracking = @{operator="ge";value=2;msg="ÉóºË¹ı³Ì×·×Ù"}
-  # + ÉóºËÄ¿Â¼·şÎñ·ÃÎÊ Ê§°Ü
-  AuditDSAccess = @{operator="ge";value=2;msg="ÉóºËÄ¿Â¼·şÎñ·ÃÎÊ"}
-  # + ÉóºËÕË»§µÇÂ¼ÊÂ¼ş ³É¹¦¡¢Ê§°Ü
-  AuditAccountLogon = @{operator="eq";value=3;msg="ÉóºËÕË»§µÇÂ¼ÊÂ¼ş"}
-  # + ¼ì²é½á¹û´æ·ÅµÄ¿ÕÊı×é
+  # + å®¡æ ¸ç³»ç»Ÿäº‹ä»¶(0) [æˆåŠŸ(1)ã€å¤±è´¥(2)] (3)
+  AuditSystemEvents = @{operator="eq";value=3;msg="å®¡æ ¸ç³»ç»Ÿäº‹ä»¶"}
+  # + å®¡æ ¸ç™»å½•äº‹ä»¶ æˆåŠŸã€å¤±è´¥
+  AuditLogonEvents = @{operator="eq";value=3;msg="å®¡æ ¸ç™»å½•äº‹ä»¶"}
+  # + å®¡æ ¸å¯¹è±¡è®¿é—® æˆåŠŸã€å¤±è´¥
+  AuditObjectAccess = @{operator="eq";value=3;msg="å®¡æ ¸å¯¹è±¡è®¿é—®"}
+  # + å®¡æ ¸ç‰¹æƒä½¿ç”¨ å¤±è´¥
+  AuditPrivilegeUse = @{operator="ge";value=2;msg="å®¡æ ¸ç‰¹æƒä½¿ç”¨"}
+  # + å®¡æ ¸ç­–ç•¥æ›´æ”¹ æˆåŠŸã€å¤±è´¥
+  AuditPolicyChange = @{operator="eq";value=3;msg="å®¡æ ¸ç­–ç•¥æ›´æ”¹"}
+  # + å®¡æ ¸è´¦æˆ·ç®¡ç† æˆåŠŸã€å¤±è´¥
+  AuditAccountManage = @{operator="eq";value=3;msg="å®¡æ ¸è´¦æˆ·ç®¡ç†"}
+  # + å®¡æ ¸è¿‡ç¨‹è¿½è¸ª å¤±è´¥
+  AuditProcessTracking = @{operator="ge";value=2;msg="å®¡æ ¸è¿‡ç¨‹è¿½è¸ª"}
+  # + å®¡æ ¸ç›®å½•æœåŠ¡è®¿é—® å¤±è´¥
+  AuditDSAccess = @{operator="ge";value=2;msg="å®¡æ ¸ç›®å½•æœåŠ¡è®¿é—®"}
+  # + å®¡æ ¸è´¦æˆ·ç™»å½•äº‹ä»¶ æˆåŠŸã€å¤±è´¥
+  AuditAccountLogon = @{operator="eq";value=3;msg="å®¡æ ¸è´¦æˆ·ç™»å½•äº‹ä»¶"}
+  # + æ£€æŸ¥ç»“æœå­˜æ”¾çš„ç©ºæ•°ç»„
   CheckResults = @()
 }
 function F_SysEventAuditPolicy {
@@ -383,7 +383,7 @@ function F_SysEventAuditPolicy {
     $Line = $Config[$i] -split " = "
     if ( $Line[0] -eq "[Registry Values]" ) { break;}
     if ($SysEventAuditPolicy.ContainsKey("$($Line[0])")) {
-      $Result = F_Tools -Key "SysEventAuditPolicy::$($Line[0])" -Value $Line[1] -Operator $SysEventAuditPolicy["$($Line[0])"].Operator -DefaultValue $SysEventAuditPolicy["$($Line[0])"].Value  -Msg "ÏµÍ³ÕËºÅ²ßÂÔÅäÖÃ-$($SysEventAuditPolicy["$($Line[0])"].Msg)"
+      $Result = F_Tools -Key "SysEventAuditPolicy::$($Line[0])" -Value $Line[1] -Operator $SysEventAuditPolicy["$($Line[0])"].Operator -DefaultValue $SysEventAuditPolicy["$($Line[0])"].Value  -Msg "ç³»ç»Ÿè´¦å·ç­–ç•¥é…ç½®-$($SysEventAuditPolicy["$($Line[0])"].Msg)"
       $SysEventAuditPolicy['CheckResults'] += $Result
     }
   }
@@ -392,88 +392,88 @@ function F_SysEventAuditPolicy {
 }
 
 #
-# * ²Ù×÷ÏµÍ³ÓÃ»§È¨ÏŞ¹ÜÀí²ßÂÔ¼ì²é  * #
+# * æ“ä½œç³»ç»Ÿç”¨æˆ·æƒé™ç®¡ç†ç­–ç•¥æ£€æŸ¥  * #
 #
-# - ×é²ßÂÔÓÃ»§È¨ÏŞ¹ÜÀí²ßÂÔ - #
+# - ç»„ç­–ç•¥ç”¨æˆ·æƒé™ç®¡ç†ç­–ç•¥ - #
 $SysUserPrivilegePolicy = @{
-# + ²Ù×÷ÏµÍ³±¾µØ¹Ø»ú²ßÂÔ°²È«
-SeShutdownPrivilege = @{operator="eq";value='*S-1-5-32-544';msg="²Ù×÷ÏµÍ³±¾µØ¹Ø»ú²ßÂÔ"}
-# + ²Ù×÷ÏµÍ³Ô¶³Ì¹Ø»ú²ßÂÔ°²È«
-SeRemoteShutdownPrivilege = @{operator="eq";value='*S-1-5-32-544';msg="²Ù×÷ÏµÍ³Ô¶³Ì¹Ø»ú²ßÂÔ"}
-# + È¡µÃÎÄ¼ş»òÆäËû¶ÔÏóµÄËùÓĞÈ¨ÏŞ²ßÂÔ
-SeProfileSingleProcessPrivilege = @{operator="eq";value='*S-1-5-32-544';msg="È¡µÃÎÄ¼ş»òÆäËû¶ÔÏóµÄËùÓĞÈ¨ÏŞ²ßÂÔ"}
-# + ´ÓÍøÂç·ÃÎÊ´Ë¼ÆËã»ú²ßÂÔ
-SeNetworkLogonRight = @{operator="eq";value='*S-1-5-32-544,*S-1-5-32-545,*S-1-5-32-551';msg="´ÓÍøÂç·ÃÎÊ´Ë¼ÆËã»ú²ßÂÔ"}
+# + æ“ä½œç³»ç»Ÿæœ¬åœ°å…³æœºç­–ç•¥å®‰å…¨
+SeShutdownPrivilege = @{operator="eq";value='*S-1-5-32-544';msg="æ“ä½œç³»ç»Ÿæœ¬åœ°å…³æœºç­–ç•¥"}
+# + æ“ä½œç³»ç»Ÿè¿œç¨‹å…³æœºç­–ç•¥å®‰å…¨
+SeRemoteShutdownPrivilege = @{operator="eq";value='*S-1-5-32-544';msg="æ“ä½œç³»ç»Ÿè¿œç¨‹å…³æœºç­–ç•¥"}
+# + å–å¾—æ–‡ä»¶æˆ–å…¶ä»–å¯¹è±¡çš„æ‰€æœ‰æƒé™ç­–ç•¥
+SeProfileSingleProcessPrivilege = @{operator="eq";value='*S-1-5-32-544';msg="å–å¾—æ–‡ä»¶æˆ–å…¶ä»–å¯¹è±¡çš„æ‰€æœ‰æƒé™ç­–ç•¥"}
+# + ä»ç½‘ç»œè®¿é—®æ­¤è®¡ç®—æœºç­–ç•¥
+SeNetworkLogonRight = @{operator="eq";value='*S-1-5-32-544,*S-1-5-32-545,*S-1-5-32-551';msg="ä»ç½‘ç»œè®¿é—®æ­¤è®¡ç®—æœºç­–ç•¥"}
 CheckResults = @()
 }
 
 Function F_SysUserPrivilegePolicy {
-  # - ²ßÂÔ×éÓÃ»§È¨ÏŞÅäÖÃ
-  $Hash = $SysUserPrivilegePolicy.Clone()  # ¾Ş¿ÓÖ®´¦
+  # - ç­–ç•¥ç»„ç”¨æˆ·æƒé™é…ç½®
+  $Hash = $SysUserPrivilegePolicy.Clone()  # å·¨å‘ä¹‹å¤„
   foreach ( $Name in $Hash.keys) {
     if ( $Name.Equals("CheckResults")){ continue; }
     $Line = ($Config | Select-String $Name.toString()) -split " = "
-    $Result = F_Tools -Key "SysUserPrivilegePolicy::$($Line[0])" -Value $Line[1] -Operator $SysUserPrivilegePolicy["$($Line[0])"].Operator -DefaultValue $SysUserPrivilegePolicy["$($Line[0])"].Value  -Msg "²ßÂÔ×éÓÃ»§È¨ÏŞÅäÖÃ-$($SysUserPrivilegePolicy["$($Line[0])"].Msg)"
+    $Result = F_Tools -Key "SysUserPrivilegePolicy::$($Line[0])" -Value $Line[1] -Operator $SysUserPrivilegePolicy["$($Line[0])"].Operator -DefaultValue $SysUserPrivilegePolicy["$($Line[0])"].Value  -Msg "ç­–ç•¥ç»„ç”¨æˆ·æƒé™é…ç½®-$($SysUserPrivilegePolicy["$($Line[0])"].Msg)"
     $SysUserPrivilegePolicy['CheckResults'] += $Result
   }
   return $SysUserPrivilegePolicy['CheckResults']
 }
 
 #
-# * ²Ù×÷ÏµÍ³²ßÂÔ×é°²È«Ñ¡ÏîÈ¨ÏŞÅäÖÃ¼ì²é * #
+# * æ“ä½œç³»ç»Ÿç­–ç•¥ç»„å®‰å…¨é€‰é¡¹æƒé™é…ç½®æ£€æŸ¥ * #
 # 
-# - ×é²ßÂÔ°²È«Ñ¡Ïî²ßÂÔ - #
+# - ç»„ç­–ç•¥å®‰å…¨é€‰é¡¹ç­–ç•¥ - #
 $SysSecurityOptionPolicy = @{
-  # - ÕÊ»§:Ê¹ÓÃ¿ÕÃÜÂëµÄ±¾µØÕÊ»§Ö»ÔÊĞí½øĞĞ¿ØÖÆÌ¨µÇÂ¼(ÆôÓÃ),×¢Òâ´ËÉèÖÃ²»Ó°ÏìÊ¹ÓÃÓòÕÊ»§µÄµÇÂ¼¡£(0½ûÓÃ|1ÆôÓÃ)
-  LimitBlankPasswordUse = @{operator="eq";value="MACHINE\System\CurrentControlSet\Control\Lsa\LimitBlankPasswordUse=4,1";msg="ÕÊ»§-Ê¹ÓÃ¿ÕÃÜÂëµÄ±¾µØÕÊ»§Ö»ÔÊĞí½øĞĞ¿ØÖÆÌ¨µÇÂ¼(ÆôÓÃ)"}
+  # - å¸æˆ·:ä½¿ç”¨ç©ºå¯†ç çš„æœ¬åœ°å¸æˆ·åªå…è®¸è¿›è¡Œæ§åˆ¶å°ç™»å½•(å¯ç”¨),æ³¨æ„æ­¤è®¾ç½®ä¸å½±å“ä½¿ç”¨åŸŸå¸æˆ·çš„ç™»å½•ã€‚(0ç¦ç”¨|1å¯ç”¨)
+  LimitBlankPasswordUse = @{operator="eq";value="MACHINE\System\CurrentControlSet\Control\Lsa\LimitBlankPasswordUse=4,1";msg="å¸æˆ·-ä½¿ç”¨ç©ºå¯†ç çš„æœ¬åœ°å¸æˆ·åªå…è®¸è¿›è¡Œæ§åˆ¶å°ç™»å½•(å¯ç”¨)"}
   
-  # - ½»»¥Ê½µÇÂ¼: ²»ÏÔÊ¾ÉÏ´ÎµÇÂ¼ÓÃ»§ÃûÖµ(ÆôÓÃ)
-  DontDisplayLastUserName = @{operator="eq";value="MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\DontDisplayLastUserName=4,1";msg="½»»¥Ê½µÇÂ¼-²»ÏÔÊ¾ÉÏ´ÎµÇÂ¼ÓÃ»§ÃûÖµ(ÆôÓÃ)"}
-  # - ½»»¥Ê½µÇÂ¼: µÇÂ¼Ê±²»ÏÔÊ¾ÓÃ»§Ãû
-  DontDisplayUserName = @{operator="eq";value="MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\DontDisplayUserName=4,1";msg="½»»¥Ê½µÇÂ¼: µÇÂ¼Ê±²»ÏÔÊ¾ÓÃ»§Ãû"}
-  # - ½»»¥Ê½µÇÂ¼: Ëø¶¨»á»°Ê±ÏÔÊ¾ÓÃ»§ĞÅÏ¢(²»ÏÔÊ¾ÈÎºÎĞÅÏ¢)
-  DontDisplayLockedUserId = @{operator="eq";value="MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\DontDisplayLockedUserId=4,3";msg="½»»¥Ê½µÇÂ¼: Ëø¶¨»á»°Ê±ÏÔÊ¾ÓÃ»§ĞÅÏ¢(²»ÏÔÊ¾ÈÎºÎĞÅÏ¢)"}
-  # - ½»»¥Ê½µÇÂ¼: ÎŞĞè°´ CTRL+ALT+DEL(½ûÓÃ)
-  DisableCAD = @{operator="eq";value="MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\DisableCAD=4,0";msg="½»»¥Ê½µÇÂ¼-ÎŞĞè°´CTRL+ALT+DELÖµ(½ûÓÃ)"}
-  # - ½»»¥Ê½µÇÂ¼£º¼ÆËã»ú²»»î¶¯ÏŞÖÆÖµÎª600Ãë»ò¸üÉÙ
-  InactivityTimeoutSecs = @{operator="le";value="MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\InactivityTimeoutSecs=4,600";msg="½»»¥Ê½µÇÂ¼-¼ÆËã»ú²»»î¶¯ÏŞÖÆÖµÎª600Ãë»ò¸üÉÙ"}
-  # - ½»»¥Ê½µÇÂ¼: ¼ÆËã»úÕÊ»§ãĞÖµ´Ë²ßÂÔÉèÖÃÈ·¶¨¿Éµ¼ÖÂ¼ÆËã»úÖØÆôµÄÊ§°ÜµÇÂ¼³¢ÊÔ´ÎÊı
-  MaxDevicePasswordFailedAttempts = @{operator="le";value="MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\MaxDevicePasswordFailedAttempts=4,10";msg="½»»¥Ê½µÇÂ¼: ´Ë²ßÂÔÉèÖÃÈ·¶¨¿Éµ¼ÖÂ¼ÆËã»úÖØÆôµÄÊ§°ÜµÇÂ¼³¢ÊÔ´ÎÊı"}
-  # - ½»»¥Ê½µÇÂ¼: ÊÔÍ¼µÇÂ¼µÄÓÃ»§µÄÏûÏ¢±êÌâ
-  LegalNoticeCaption = @{operator="eq";value='MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\LegalNoticeCaption=1,"°²È«µÇÂ½"';msg="½»»¥Ê½µÇÂ¼: ÊÔÍ¼µÇÂ¼µÄÓÃ»§µÄÏûÏ¢±êÌâ"}
-  # - ½»»¥Ê½µÇÂ¼: ÊÔÍ¼µÇÂ¼µÄÓÃ»§µÄÏûÏ¢ÎÄ±¾
-  LegalNoticeText = @{operator="eq";value='MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\LegalNoticeText=7,Çë½÷É÷µÄ²Ù×÷·şÎñÆ÷ÖĞÊı¾İ,ÄúËùÓĞ²Ù×÷½«±»¼ÇÂ¼Éó¼Æ';msg="½»»¥Ê½µÇÂ¼: ÊÔÍ¼µÇÂ¼µÄÓÃ»§µÄÏûÏ¢ÎÄ±¾"}
+  # - äº¤äº’å¼ç™»å½•: ä¸æ˜¾ç¤ºä¸Šæ¬¡ç™»å½•ç”¨æˆ·åå€¼(å¯ç”¨)
+  DontDisplayLastUserName = @{operator="eq";value="MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\DontDisplayLastUserName=4,1";msg="äº¤äº’å¼ç™»å½•-ä¸æ˜¾ç¤ºä¸Šæ¬¡ç™»å½•ç”¨æˆ·åå€¼(å¯ç”¨)"}
+  # - äº¤äº’å¼ç™»å½•: ç™»å½•æ—¶ä¸æ˜¾ç¤ºç”¨æˆ·å
+  DontDisplayUserName = @{operator="eq";value="MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\DontDisplayUserName=4,1";msg="äº¤äº’å¼ç™»å½•: ç™»å½•æ—¶ä¸æ˜¾ç¤ºç”¨æˆ·å"}
+  # - äº¤äº’å¼ç™»å½•: é”å®šä¼šè¯æ—¶æ˜¾ç¤ºç”¨æˆ·ä¿¡æ¯(ä¸æ˜¾ç¤ºä»»ä½•ä¿¡æ¯)
+  DontDisplayLockedUserId = @{operator="eq";value="MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\DontDisplayLockedUserId=4,3";msg="äº¤äº’å¼ç™»å½•: é”å®šä¼šè¯æ—¶æ˜¾ç¤ºç”¨æˆ·ä¿¡æ¯(ä¸æ˜¾ç¤ºä»»ä½•ä¿¡æ¯)"}
+  # - äº¤äº’å¼ç™»å½•: æ— éœ€æŒ‰ CTRL+ALT+DEL(ç¦ç”¨)
+  DisableCAD = @{operator="eq";value="MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\DisableCAD=4,0";msg="äº¤äº’å¼ç™»å½•-æ— éœ€æŒ‰CTRL+ALT+DELå€¼(ç¦ç”¨)"}
+  # - äº¤äº’å¼ç™»å½•ï¼šè®¡ç®—æœºä¸æ´»åŠ¨é™åˆ¶å€¼ä¸º600ç§’æˆ–æ›´å°‘
+  InactivityTimeoutSecs = @{operator="le";value="MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\InactivityTimeoutSecs=4,600";msg="äº¤äº’å¼ç™»å½•-è®¡ç®—æœºä¸æ´»åŠ¨é™åˆ¶å€¼ä¸º600ç§’æˆ–æ›´å°‘"}
+  # - äº¤äº’å¼ç™»å½•: è®¡ç®—æœºå¸æˆ·é˜ˆå€¼æ­¤ç­–ç•¥è®¾ç½®ç¡®å®šå¯å¯¼è‡´è®¡ç®—æœºé‡å¯çš„å¤±è´¥ç™»å½•å°è¯•æ¬¡æ•°
+  MaxDevicePasswordFailedAttempts = @{operator="le";value="MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\MaxDevicePasswordFailedAttempts=4,10";msg="äº¤äº’å¼ç™»å½•: æ­¤ç­–ç•¥è®¾ç½®ç¡®å®šå¯å¯¼è‡´è®¡ç®—æœºé‡å¯çš„å¤±è´¥ç™»å½•å°è¯•æ¬¡æ•°"}
+  # - äº¤äº’å¼ç™»å½•: è¯•å›¾ç™»å½•çš„ç”¨æˆ·çš„æ¶ˆæ¯æ ‡é¢˜
+  LegalNoticeCaption = @{operator="eq";value='MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\LegalNoticeCaption=1,"å®‰å…¨ç™»é™†"';msg="äº¤äº’å¼ç™»å½•: è¯•å›¾ç™»å½•çš„ç”¨æˆ·çš„æ¶ˆæ¯æ ‡é¢˜"}
+  # - äº¤äº’å¼ç™»å½•: è¯•å›¾ç™»å½•çš„ç”¨æˆ·çš„æ¶ˆæ¯æ–‡æœ¬
+  LegalNoticeText = @{operator="eq";value='MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\LegalNoticeText=7,è¯·è°¨æ…çš„æ“ä½œæœåŠ¡å™¨ä¸­æ•°æ®,æ‚¨æ‰€æœ‰æ“ä½œå°†è¢«è®°å½•å®¡è®¡';msg="äº¤äº’å¼ç™»å½•: è¯•å›¾ç™»å½•çš„ç”¨æˆ·çš„æ¶ˆæ¯æ–‡æœ¬"}
   
-  # - MicrosoftÍøÂç¿Í»§¶Ë: ½«Î´¼ÓÃÜµÄÃÜÂë·¢ËÍµ½µÚÈı·½ SMB ·şÎñÆ÷(½ûÓÃ)
-  EnablePlainTextPassword = @{operator="eq";value="MACHINE\System\CurrentControlSet\Services\LanmanWorkstation\Parameters\EnablePlainTextPassword=4,0";msg="MicrosoftÍøÂç¿Í»§¶Ë-½«Î´¼ÓÃÜµÄÃÜÂë·¢ËÍµ½µÚÈı·½ SMB ·şÎñÆ÷(½ûÓÃ)"}
-  # - MicrosoftÍøÂç·şÎñÆ÷£ºÔİÍ£»á»°Ç°ËùĞèµÄ¿ÕÏĞÊ±¼äÊıÁ¿ÖµÎª15·ÖÖÓ»ò¸üÉÙµ«²»Îª0
-  AutoDisconnect = @{operator="eq";value="MACHINE\System\CurrentControlSet\Services\LanManServer\Parameters\AutoDisconnect=4,15";msg="MicrosoftÍøÂç·şÎñÆ÷-ÔİÍ£»á»°Ç°ËùĞèµÄ¿ÕÏĞÊ±¼äÊıÁ¿ÖµÎª15·ÖÖÓ"}
+  # - Microsoftç½‘ç»œå®¢æˆ·ç«¯: å°†æœªåŠ å¯†çš„å¯†ç å‘é€åˆ°ç¬¬ä¸‰æ–¹ SMB æœåŠ¡å™¨(ç¦ç”¨)
+  EnablePlainTextPassword = @{operator="eq";value="MACHINE\System\CurrentControlSet\Services\LanmanWorkstation\Parameters\EnablePlainTextPassword=4,0";msg="Microsoftç½‘ç»œå®¢æˆ·ç«¯-å°†æœªåŠ å¯†çš„å¯†ç å‘é€åˆ°ç¬¬ä¸‰æ–¹ SMB æœåŠ¡å™¨(ç¦ç”¨)"}
+  # - Microsoftç½‘ç»œæœåŠ¡å™¨ï¼šæš‚åœä¼šè¯å‰æ‰€éœ€çš„ç©ºé—²æ—¶é—´æ•°é‡å€¼ä¸º15åˆ†é’Ÿæˆ–æ›´å°‘ä½†ä¸ä¸º0
+  AutoDisconnect = @{operator="eq";value="MACHINE\System\CurrentControlSet\Services\LanManServer\Parameters\AutoDisconnect=4,15";msg="Microsoftç½‘ç»œæœåŠ¡å™¨-æš‚åœä¼šè¯å‰æ‰€éœ€çš„ç©ºé—²æ—¶é—´æ•°é‡å€¼ä¸º15åˆ†é’Ÿ"}
   
-  # - ÍøÂç°²È«: ÔÙÏÂÒ»´Î¸Ä±äÃÜÂëÊ±²»´æ´¢LAN¹ÜÀíÆ÷¹şÏ£Öµ(ÆôÓÃ)
-  NoLMHash = @{operator="eq";value="MACHINE\System\CurrentControlSet\Control\Lsa\NoLMHash=4,1";msg="ÍøÂç°²È«-ÔÚÏÂÒ»´Î¸Ä±äÃÜÂëÊ±²»´æ´¢LAN¹ÜÀíÆ÷¹şÏ£Öµ(ÆôÓÃ)"}
+  # - ç½‘ç»œå®‰å…¨: å†ä¸‹ä¸€æ¬¡æ”¹å˜å¯†ç æ—¶ä¸å­˜å‚¨LANç®¡ç†å™¨å“ˆå¸Œå€¼(å¯ç”¨)
+  NoLMHash = @{operator="eq";value="MACHINE\System\CurrentControlSet\Control\Lsa\NoLMHash=4,1";msg="ç½‘ç»œå®‰å…¨-åœ¨ä¸‹ä¸€æ¬¡æ”¹å˜å¯†ç æ—¶ä¸å­˜å‚¨LANç®¡ç†å™¨å“ˆå¸Œå€¼(å¯ç”¨)"}
   
-  # - ÍøÂç·ÃÎÊ: ²»ÔÊĞíSAMÕË»§µÄÄäÃûÃ¶¾ÙÖµÎª(ÆôÓÃ)
-  RestrictAnonymousSAM = @{operator="eq";value="MACHINE\System\CurrentControlSet\Control\Lsa\RestrictAnonymousSAM=4,1";msg="ÍøÂç·ÃÎÊ-²»ÔÊĞíSAMÕË»§µÄÄäÃûÃ¶¾ÙÖµÎª(ÆôÓÃ)"}
-  # - ÍøÂç·ÃÎÊ:²»ÔÊĞíSAMÕË»§ºÍ¹²ÏíµÄÄäÃûÃ¶¾ÙÖµÎª(ÆôÓÃ)
-  RestrictAnonymous = @{operator="eq";value="MACHINE\System\CurrentControlSet\Control\Lsa\RestrictAnonymous=4,1";msg="ÍøÂç·ÃÎÊ-²»ÔÊĞíSAMÕË»§ºÍ¹²ÏíµÄÄäÃûÃ¶¾ÙÖµÎª(ÆôÓÃ)"}
+  # - ç½‘ç»œè®¿é—®: ä¸å…è®¸SAMè´¦æˆ·çš„åŒ¿åæšä¸¾å€¼ä¸º(å¯ç”¨)
+  RestrictAnonymousSAM = @{operator="eq";value="MACHINE\System\CurrentControlSet\Control\Lsa\RestrictAnonymousSAM=4,1";msg="ç½‘ç»œè®¿é—®-ä¸å…è®¸SAMè´¦æˆ·çš„åŒ¿åæšä¸¾å€¼ä¸º(å¯ç”¨)"}
+  # - ç½‘ç»œè®¿é—®:ä¸å…è®¸SAMè´¦æˆ·å’Œå…±äº«çš„åŒ¿åæšä¸¾å€¼ä¸º(å¯ç”¨)
+  RestrictAnonymous = @{operator="eq";value="MACHINE\System\CurrentControlSet\Control\Lsa\RestrictAnonymous=4,1";msg="ç½‘ç»œè®¿é—®-ä¸å…è®¸SAMè´¦æˆ·å’Œå…±äº«çš„åŒ¿åæšä¸¾å€¼ä¸º(å¯ç”¨)"}
   
-  # - ¹Ø»ú:ÉèÖÃÈ·¶¨ÊÇ·ñ¿ÉÒÔÔÚÎŞĞèµÇÂ¼ Windows µÄÇé¿öÏÂ¹Ø±Õ¼ÆËã»ú(½ûÓÃ)
-  ClearPageFileAtShutdown = @{operator="eq";value="MACHINE\System\CurrentControlSet\Control\Session Manager\Memory Management\ClearPageFileAtShutdown=4,0";msg="¹Ø»ú-ÉèÖÃÈ·¶¨ÊÇ·ñ¿ÉÒÔÔÚÎŞĞèµÇÂ¼ Windows µÄÇé¿öÏÂ¹Ø±Õ¼ÆËã»ú(½ûÓÃ)"}
+  # - å…³æœº:è®¾ç½®ç¡®å®šæ˜¯å¦å¯ä»¥åœ¨æ— éœ€ç™»å½• Windows çš„æƒ…å†µä¸‹å…³é—­è®¡ç®—æœº(ç¦ç”¨)
+  ClearPageFileAtShutdown = @{operator="eq";value="MACHINE\System\CurrentControlSet\Control\Session Manager\Memory Management\ClearPageFileAtShutdown=4,0";msg="å…³æœº-è®¾ç½®ç¡®å®šæ˜¯å¦å¯ä»¥åœ¨æ— éœ€ç™»å½• Windows çš„æƒ…å†µä¸‹å…³é—­è®¡ç®—æœº(ç¦ç”¨)"}
   
   "CheckResults" = @()
 }
 Function F_SysSecurityOptionPolicy {
-  $Hash = $SysSecurityOptionPolicy.Clone()  # ¾Ş¿ÓÖ®´¦
+  $Hash = $SysSecurityOptionPolicy.Clone()  # å·¨å‘ä¹‹å¤„
   foreach ( $Name in $Hash.keys) {
     if ( $Name.Equals("CheckResults")){ continue; }
     $Flag = $Config | Select-String $Name.toString() 
     $Value = $SysSecurityOptionPolicy["$($Name)"].Value -split ","
     if ( $Flag ) {
       $Line = $Flag -split ","
-      $Result = F_Tools -Key "SysSecurityOptionPolicy::$($Name)" -Value $Line[1] -Operator $SysSecurityOptionPolicy["$($Name)"].Operator -DefaultValue $Value[1] -Msg "²ßÂÔ×é°²È«Ñ¡ÏîÅäÖÃ-$($SysSecurityOptionPolicy["$($Name)"].Msg)"
+      $Result = F_Tools -Key "SysSecurityOptionPolicy::$($Name)" -Value $Line[1] -Operator $SysSecurityOptionPolicy["$($Name)"].Operator -DefaultValue $Value[1] -Msg "ç­–ç•¥ç»„å®‰å…¨é€‰é¡¹é…ç½®-$($SysSecurityOptionPolicy["$($Name)"].Msg)"
       $SysSecurityOptionPolicy['CheckResults'] += $Result
     } else {
-      $Result = @{"SysSecurityOptionPolicy::$($Name)"="[Òì³£Ïî]|Î´ÅäÖÃ|$($Value[1])|²ßÂÔ×é°²È«Ñ¡ÏîÅäÖÃ-$($SysSecurityOptionPolicy["$($Name)"].Msg)-¡¾²»·ûºÏ¡¿µÈ¼¶±£»¤±ê×¼."}
+      $Result = @{"SysSecurityOptionPolicy::$($Name)"="[å¼‚å¸¸é¡¹]|æœªé…ç½®|$($Value[1])|ç­–ç•¥ç»„å®‰å…¨é€‰é¡¹é…ç½®-$($SysSecurityOptionPolicy["$($Name)"].Msg)-ã€ä¸ç¬¦åˆã€‘ç­‰çº§ä¿æŠ¤æ ‡å‡†."}
       $SysSecurityOptionPolicy['CheckResults'] += $Result
     }
   }
@@ -482,42 +482,42 @@ Function F_SysSecurityOptionPolicy {
 
 
 #
-# * ²Ù×÷ÏµÍ³×¢²á±íÏà¹ØÅäÖÃ¼ì²éº¯Êı  * #
+# * æ“ä½œç³»ç»Ÿæ³¨å†Œè¡¨ç›¸å…³é…ç½®æ£€æŸ¥å‡½æ•°  * #
 #
-# - ×¢²á±íÏà¹Ø°²È«²ßÂÔ  -
+# - æ³¨å†Œè¡¨ç›¸å…³å®‰å…¨ç­–ç•¥  -
 $SysRegistryPolicy = @{
-# + ÆÁÄ»×Ô¶¯±£»¤³ÌĞò
-ScreenSaveActive = @{regname="HKEY_CURRENT_USER\Control Panel\Desktop";name="ScreenSaveActive";operator="eq";value=1;msg="ÏµÍ³»ùÅäºË²é-ÆÁÄ»×Ô¶¯±£»¤³ÌĞò²ßÂÔ"}
-# + ÆÁÄ»»Ö¸´Ê±Ê¹ÓÃÃÜÂë±£»¤
-ScreenSaverIsSecure = @{regname="HKEY_CURRENT_USER\Control Panel\Desktop";name="ScreenSaverIsSecure";operator="eq";value=1;msg="ÏµÍ³»ùÅäºË²é-ÆÁÄ»»Ö¸´Ê±Ê¹ÓÃÃÜÂë±£»¤²ßÂÔ"}
-# + ÆÁÄ»±£»¤³ÌĞòÆô¶¯Ê±¼ä
-ScreenSaveTimeOut = @{regname="HKEY_CURRENT_USER\Control Panel\Desktop";name="ScreenSaveTimeOut";operator="le";value=600;msg="ÏµÍ³»ùÅäºË²é-ÆÁÄ»±£»¤³ÌĞòÆô¶¯Ê±¼ä²ßÂÔ"}
+# + å±å¹•è‡ªåŠ¨ä¿æŠ¤ç¨‹åº
+ScreenSaveActive = @{regname="HKEY_CURRENT_USER\Control Panel\Desktop";name="ScreenSaveActive";operator="eq";value=1;msg="ç³»ç»ŸåŸºé…æ ¸æŸ¥-å±å¹•è‡ªåŠ¨ä¿æŠ¤ç¨‹åºç­–ç•¥"}
+# + å±å¹•æ¢å¤æ—¶ä½¿ç”¨å¯†ç ä¿æŠ¤
+ScreenSaverIsSecure = @{regname="HKEY_CURRENT_USER\Control Panel\Desktop";name="ScreenSaverIsSecure";operator="eq";value=1;msg="ç³»ç»ŸåŸºé…æ ¸æŸ¥-å±å¹•æ¢å¤æ—¶ä½¿ç”¨å¯†ç ä¿æŠ¤ç­–ç•¥"}
+# + å±å¹•ä¿æŠ¤ç¨‹åºå¯åŠ¨æ—¶é—´
+ScreenSaveTimeOut = @{regname="HKEY_CURRENT_USER\Control Panel\Desktop";name="ScreenSaveTimeOut";operator="le";value=600;msg="ç³»ç»ŸåŸºé…æ ¸æŸ¥-å±å¹•ä¿æŠ¤ç¨‹åºå¯åŠ¨æ—¶é—´ç­–ç•¥"}
 
-# + ½ûÖ¹È«²¿Çı¶¯Æ÷×Ô¶¯²¥·Å
-DisableAutoplay  = @{regname="HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer";name="DisableAutoplay";regtype="DWord";operator="eq";value=1;msg="½ûÖ¹È«²¿Çı¶¯Æ÷×Ô¶¯²¥·Å"}
-NoDriveTypeAutoRun = @{regname="HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer";name="NoDriveTypeAutoRun";regtype="DWord";operator="eq";value=255;msg="½ûÖ¹È«²¿Çı¶¯Æ÷×Ô¶¯²¥·Å"}
+# + ç¦æ­¢å…¨éƒ¨é©±åŠ¨å™¨è‡ªåŠ¨æ’­æ”¾
+DisableAutoplay  = @{regname="HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer";name="DisableAutoplay";regtype="DWord";operator="eq";value=1;msg="ç¦æ­¢å…¨éƒ¨é©±åŠ¨å™¨è‡ªåŠ¨æ’­æ”¾"}
+NoDriveTypeAutoRun = @{regname="HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer";name="NoDriveTypeAutoRun";regtype="DWord";operator="eq";value=255;msg="ç¦æ­¢å…¨éƒ¨é©±åŠ¨å™¨è‡ªåŠ¨æ’­æ”¾"}
 
-# - ¼ì²é¹Ø±ÕÄ¬ÈÏ¹²ÏíÅÌ
-restrictanonymous = @{regname="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa";name="restrictanonymous";operator="eq";value=1;msg="ÏµÍ³ÍøÂç»ùÅäºË²é-¹Ø±ÕÄ¬ÈÏ¹²ÏíÅÌ²ßÂÔ"}
-restrictanonymoussam = @{regname="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa";name="restrictanonymoussam";regtype="DWord";operator="eq";value=1;msg="²»ÔÊĞíSAMÕË»§µÄÄäÃûÃ¶¾ÙÖµÎª(ÆôÓÃ)"}
+# - æ£€æŸ¥å…³é—­é»˜è®¤å…±äº«ç›˜
+restrictanonymous = @{regname="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa";name="restrictanonymous";operator="eq";value=1;msg="ç³»ç»Ÿç½‘ç»œåŸºé…æ ¸æŸ¥-å…³é—­é»˜è®¤å…±äº«ç›˜ç­–ç•¥"}
+restrictanonymoussam = @{regname="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa";name="restrictanonymoussam";regtype="DWord";operator="eq";value=1;msg="ä¸å…è®¸SAMè´¦æˆ·çš„åŒ¿åæšä¸¾å€¼ä¸º(å¯ç”¨)"}
 
-# - ½ûÓÃ´ÅÅÌ¹²Ïí(SMB)
-AutoShareWks = @{regname="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\lanmanserver\parameters";name="AutoShareWks";regtype="DWord";operator="eq";value=0;msg="¹Ø±Õ½ûÓÃÄ¬ÈÏ¹²Ïí²ßÂÔ-Server2012"}
-AutoShareServer = @{regname="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\lanmanserver\parameters";name="AutoShareServer";regtype="DWord";operator="eq";value=0;msg="¹Ø±Õ½ûÓÃÄ¬ÈÏ¹²Ïí²ßÂÔ-Server2012"}
+# - ç¦ç”¨ç£ç›˜å…±äº«(SMB)
+AutoShareWks = @{regname="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\lanmanserver\parameters";name="AutoShareWks";regtype="DWord";operator="eq";value=0;msg="å…³é—­ç¦ç”¨é»˜è®¤å…±äº«ç­–ç•¥-Server2012"}
+AutoShareServer = @{regname="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\lanmanserver\parameters";name="AutoShareServer";regtype="DWord";operator="eq";value=0;msg="å…³é—­ç¦ç”¨é»˜è®¤å…±äº«ç­–ç•¥-Server2012"}
 
-# - ÏµÍ³¡¢Ó¦ÓÃ¡¢°²È«¡¢PSÈÕÖ¾²é¿´Æ÷´óĞ¡ÉèÖÃ(´Ë´¦ÉèÖÃÄ¬ÈÏµÄÁ½±¶ÅäÖÃ-½¨ÒéÒ»¶¨Í¨¹ıÈÕÖ¾²É¼¯Æ½Ì¨²É¼¯ÏµÍ³ÈÕÖ¾±ÈÈçELK)
-EventlogSystemMaxSize = @{regname="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Eventlog\System";name="MaxSize";operator="ge";value=41943040;msg="ÏµÍ³»ùÈÕÖ¾ÅäºË²é-ÏµÍ³ÈÕÖ¾²é¿´Æ÷´óĞ¡ÉèÖÃ²ßÂÔ"}
-EventlogApplicationMaxSize = @{regname="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Eventlog\Application";name="MaxSize";operator="ge";value=41943040;msg="ÏµÍ³ÈÕÖ¾»ùÅäºË²é-Ó¦ÓÃÈÕÖ¾²é¿´Æ÷´óĞ¡ÉèÖÃ²ßÂÔ"}
-EventlogSecurityMaxSize = @{regname="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Eventlog\Security";name="MaxSize";operator="ge";value=41943040;msg="ÏµÍ³ÈÕÖ¾»ùÅäºË²é-°²È«ÈÕÖ¾²é¿´Æ÷´óĞ¡ÉèÖÃ²ßÂÔ"}
-EventlogPSMaxSize = @{regname="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Eventlog\Windows PowerShell";name="MaxSize";operator="ge";value=31457280;msg="ÏµÍ³ÈÕÖ¾»ùÅäºË²é-PSÈÕÖ¾²é¿´Æ÷´óĞ¡ÉèÖÃ²ßÂÔ"}
+# - ç³»ç»Ÿã€åº”ç”¨ã€å®‰å…¨ã€PSæ—¥å¿—æŸ¥çœ‹å™¨å¤§å°è®¾ç½®(æ­¤å¤„è®¾ç½®é»˜è®¤çš„ä¸¤å€é…ç½®-å»ºè®®ä¸€å®šé€šè¿‡æ—¥å¿—é‡‡é›†å¹³å°é‡‡é›†ç³»ç»Ÿæ—¥å¿—æ¯”å¦‚ELK)
+EventlogSystemMaxSize = @{regname="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Eventlog\System";name="MaxSize";operator="ge";value=41943040;msg="ç³»ç»ŸåŸºæ—¥å¿—é…æ ¸æŸ¥-ç³»ç»Ÿæ—¥å¿—æŸ¥çœ‹å™¨å¤§å°è®¾ç½®ç­–ç•¥"}
+EventlogApplicationMaxSize = @{regname="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Eventlog\Application";name="MaxSize";operator="ge";value=41943040;msg="ç³»ç»Ÿæ—¥å¿—åŸºé…æ ¸æŸ¥-åº”ç”¨æ—¥å¿—æŸ¥çœ‹å™¨å¤§å°è®¾ç½®ç­–ç•¥"}
+EventlogSecurityMaxSize = @{regname="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Eventlog\Security";name="MaxSize";operator="ge";value=41943040;msg="ç³»ç»Ÿæ—¥å¿—åŸºé…æ ¸æŸ¥-å®‰å…¨æ—¥å¿—æŸ¥çœ‹å™¨å¤§å°è®¾ç½®ç­–ç•¥"}
+EventlogPSMaxSize = @{regname="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Eventlog\Windows PowerShell";name="MaxSize";operator="ge";value=31457280;msg="ç³»ç»Ÿæ—¥å¿—åŸºé…æ ¸æŸ¥-PSæ—¥å¿—æŸ¥çœ‹å™¨å¤§å°è®¾ç½®ç­–ç•¥"}
 
-# - ·À»ğÇ½Ïà¹Ø²Ù×÷ÉèÖÃ£¨¿ªÆô¡¢Ğ­Òé¡¢·şÎñ£©
-DomainEnableFirewall  = @{regname='HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\DomainProfile';name='EnableFirewall';regtype="DWord";operator="eq";value=1;msg="¿ªÆôÓòÍøÂç·À»ğÇ½"}
-StandardEnableFirewall = @{regname='HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\services\SharedAccess\Parameters\FirewallPolicy\StandardProfile';name='EnableFirewall';regtype="DWord";operator="eq";value=1;msg="¿ªÆô×¨ÓÃÍøÂç·À»ğÇ½"}
-PPEnableFirewall = @{regname='HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\services\SharedAccess\Parameters\FirewallPolicy\PublicProfile';name='EnableFirewall';regtype="DWord";operator="eq";value=1;msg="¿ªÆô¹«ÓÃÍøÂç·À»ğÇ½"}
+# - é˜²ç«å¢™ç›¸å…³æ“ä½œè®¾ç½®ï¼ˆå¼€å¯ã€åè®®ã€æœåŠ¡ï¼‰
+DomainEnableFirewall  = @{regname='HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\DomainProfile';name='EnableFirewall';regtype="DWord";operator="eq";value=1;msg="å¼€å¯åŸŸç½‘ç»œé˜²ç«å¢™"}
+StandardEnableFirewall = @{regname='HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\services\SharedAccess\Parameters\FirewallPolicy\StandardProfile';name='EnableFirewall';regtype="DWord";operator="eq";value=1;msg="å¼€å¯ä¸“ç”¨ç½‘ç»œé˜²ç«å¢™"}
+PPEnableFirewall = @{regname='HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\services\SharedAccess\Parameters\FirewallPolicy\PublicProfile';name='EnableFirewall';regtype="DWord";operator="eq";value=1;msg="å¼€å¯å…¬ç”¨ç½‘ç»œé˜²ç«å¢™"}
 
 
-# - ½á¹û´æ´¢
+# - ç»“æœå­˜å‚¨
 CheckResults=@()
 }
 Function F_SysRegistryPolicy { 
@@ -531,11 +531,11 @@ Function F_SysRegistryPolicy {
 }
 
 #
-# * ²Ù×÷ÏµÍ³·şÎñ¼°ÔËĞĞ³ÌĞò¼ì²éº¯Êı  * #
+# * æ“ä½œç³»ç»ŸæœåŠ¡åŠè¿è¡Œç¨‹åºæ£€æŸ¥å‡½æ•°  * #
 #
 $SysProcessServicePolicy = @{"CheckResults"=@()}
 function F_SysProcessServicePolicy {
-  # + ¼ì²âÏµÍ³¼°ÓÃ»§¿ª»úÆô¶¯Ïî
+  # + æ£€æµ‹ç³»ç»ŸåŠç”¨æˆ·å¼€æœºå¯åŠ¨é¡¹
   $SysAutoStart = Get-Item -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run'
   $SysAutoStart.GetValueNames() | % { 
     $res += "$($_)#$($SysAutoStart.GetValue($_)) "
@@ -550,53 +550,53 @@ function F_SysProcessServicePolicy {
   $Result = @{"SysProcessServicePolicy::UserAutoStart"=$res}
   $SysProcessServicePolicy['CheckResults'] += $Result
 
-  # + ·ñÆôÓÃÔ¶³Ì×ÀÃæ·şÎñ
+  # + å¦å¯ç”¨è¿œç¨‹æ¡Œé¢æœåŠ¡
   $RDPStatus = (Get-Service -Name "TermService").Status
   # if ($RDP -eq "0" -and $RDPStatus -eq "Running" ) {
-  #   $Result = @{"SysProcessServicePolicy::RDPStatus"="µ±Ç°ÏµÍ³¡¾ÒÑÆôÓÃ¡¿Ô¶³Ì×ÀÃæ·şÎñ."}
+  #   $Result = @{"SysProcessServicePolicy::RDPStatus"="å½“å‰ç³»ç»Ÿã€å·²å¯ç”¨ã€‘è¿œç¨‹æ¡Œé¢æœåŠ¡."}
   # } else {
-  #   $Result = @{"SysProcessServicePolicy::RDPStatus"="µ±Ç°ÏµÍ³¡¾Î´ÆôÓÃ¡¿Ô¶³Ì×ÀÃæ·şÎñ."}
+  #   $Result = @{"SysProcessServicePolicy::RDPStatus"="å½“å‰ç³»ç»Ÿã€æœªå¯ç”¨ã€‘è¿œç¨‹æ¡Œé¢æœåŠ¡."}
   # }
   if ($RDPStatus -eq "Running" ) {
-    $Result = F_GetRegPropertyValue -Key 'HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Terminal Server' -Name 'fDenyTSConnections' -Operator "eq" -DefaultValue 0 -Msg "ÊÇ·ñ½«Ô¶³Ì×ÀÃæ·şÎñ½ûÓÃ"
+    $Result = F_GetRegPropertyValue -Key 'HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Terminal Server' -Name 'fDenyTSConnections' -Operator "eq" -DefaultValue 0 -Msg "æ˜¯å¦å°†è¿œç¨‹æ¡Œé¢æœåŠ¡ç¦ç”¨"
   } else {
-    $Result = @{"SysProcessServicePolicy::RDPStatus"="µ±Ç°ÏµÍ³¡¾Î´ÆôÓÃ¡¿Ô¶³Ì×ÀÃæ·şÎñ."}
+    $Result = @{"SysProcessServicePolicy::RDPStatus"="å½“å‰ç³»ç»Ÿã€æœªå¯ç”¨ã€‘è¿œç¨‹æ¡Œé¢æœåŠ¡."}
   }
   $SysProcessServicePolicy['CheckResults'] += $Result
-  # - ·ñÆôÓÃNTP·şÎñÀ´Í¬²½Ê±ÖÓ
+  # - å¦å¯ç”¨NTPæœåŠ¡æ¥åŒæ­¥æ—¶é’Ÿ
   # $NTP = F_GetReg -Key 'HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\W32Time\TimeProviders\NtpServer' -Name 'Enabled'
   # if ( $NTP -eq "1") {
-  #   $Result = @{"SysProcessServicePolicy::NtpServerEnabled"="[ºÏ¸ñÏî]|$NTP|1|ÏµÍ³»ù´¡ÅäÖÃºË²é-ÆôÓÃNTP·şÎñÍ¬²½Ê±ÖÓ²ßÂÔ-¡¾·ûºÏ¡¿µÈ¼¶±£»¤±ê×¼."}
+  #   $Result = @{"SysProcessServicePolicy::NtpServerEnabled"="[åˆæ ¼é¡¹]|$NTP|1|ç³»ç»ŸåŸºç¡€é…ç½®æ ¸æŸ¥-å¯ç”¨NTPæœåŠ¡åŒæ­¥æ—¶é’Ÿç­–ç•¥-ã€ç¬¦åˆã€‘ç­‰çº§ä¿æŠ¤æ ‡å‡†."}
   # } else {
-  #   $Result = @{"SysProcessServicePolicy::NtpServerEnabled"="[Òì³£Ïî]|$NTP|1|ÏµÍ³»ù´¡ÅäÖÃºË²é-ÆôÓÃNTP·şÎñÍ¬²½Ê±ÖÓ²ßÂÔ-¡¾²»·ûºÏ¡¿µÈ¼¶±£»¤±ê×¼."}
+  #   $Result = @{"SysProcessServicePolicy::NtpServerEnabled"="[å¼‚å¸¸é¡¹]|$NTP|1|ç³»ç»ŸåŸºç¡€é…ç½®æ ¸æŸ¥-å¯ç”¨NTPæœåŠ¡åŒæ­¥æ—¶é’Ÿç­–ç•¥-ã€ä¸ç¬¦åˆã€‘ç­‰çº§ä¿æŠ¤æ ‡å‡†."}
   # }
-  $Result = F_GetRegPropertyValue -Key 'HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\W32Time\TimeProviders\NtpServer' -Name 'Enabled' -Operator "eq" -DefaultValue 1 -Msg "ÊÇ·ñÆôÓÃNTP·şÎñÍ¬²½Ê±ÖÓ²ßÂÔ"
+  $Result = F_GetRegPropertyValue -Key 'HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\W32Time\TimeProviders\NtpServer' -Name 'Enabled' -Operator "eq" -DefaultValue 1 -Msg "æ˜¯å¦å¯ç”¨NTPæœåŠ¡åŒæ­¥æ—¶é’Ÿç­–ç•¥"
   $SysProcessServicePolicy['CheckResults'] += $Result
   
 
-  # - ÊÇ·ñĞŞ¸ÄÄ¬ÈÏµÄÔ¶³Ì×ÀÃæ¶Ë¿Ú
+  # - æ˜¯å¦ä¿®æ”¹é»˜è®¤çš„è¿œç¨‹æ¡Œé¢ç«¯å£
   $RDP1 = Get-Item 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp\' | % {$_.GetValue("PortNumber")}
   $RDP2 = Get-Item 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\Wds\rdpwd\Tds\tcp\' | % {$_.GetValue("PortNumber")} 
   if ( $RDP1 -eq $RDP2 -and $RDP2 -ne "3389") {
-    $Result = @{"SysProcessServicePolicy::RDPPort"="[ºÏ¸ñÏî]|$RDP1|³ı3389ÒÔÍâµÄ¶Ë¿Ú|ÏµÍ³»ù´¡ÅäÖÃºË²é-Ä¬ÈÏµÄÔ¶³Ì×ÀÃæ¶Ë¿ÚÒÑĞŞ¸Ä-¡¾·ûºÏ¡¿µÈ¼¶±£»¤±ê×¼."}
+    $Result = @{"SysProcessServicePolicy::RDPPort"="[åˆæ ¼é¡¹]|$RDP1|é™¤3389ä»¥å¤–çš„ç«¯å£|ç³»ç»ŸåŸºç¡€é…ç½®æ ¸æŸ¥-é»˜è®¤çš„è¿œç¨‹æ¡Œé¢ç«¯å£å·²ä¿®æ”¹-ã€ç¬¦åˆã€‘ç­‰çº§ä¿æŠ¤æ ‡å‡†."}
   } else {
-    $Result = @{"SysProcessServicePolicy::RDPPort"="[Òì³£Ïî]|$RDP1|³ı3389ÒÔÍâµÄ¶Ë¿Ú|ÏµÍ³»ù´¡ÅäÖÃºË²é-Ä¬ÈÏµÄÔ¶³Ì×ÀÃæ¶Ë¿ÚÎ´ĞŞ¸Ä-¡¾²»·ûºÏ¡¿µÈ¼¶±£»¤±ê×¼."}
+    $Result = @{"SysProcessServicePolicy::RDPPort"="[å¼‚å¸¸é¡¹]|$RDP1|é™¤3389ä»¥å¤–çš„ç«¯å£|ç³»ç»ŸåŸºç¡€é…ç½®æ ¸æŸ¥-é»˜è®¤çš„è¿œç¨‹æ¡Œé¢ç«¯å£æœªä¿®æ”¹-ã€ä¸ç¬¦åˆã€‘ç­‰çº§ä¿æŠ¤æ ‡å‡†."}
   }
   $SysProcessServicePolicy['CheckResults'] += $Result
 }
 
 
 #
-# * ²Ù×÷ÏµÍ³°²È«¼ì²âº¯Êı * 
+# * æ“ä½œç³»ç»Ÿå®‰å…¨æ£€æµ‹å‡½æ•° * 
 #
-# * Î¢ÈíWindows·şÎñÆ÷°²È«²¹¶¡ÁĞ±íĞÅÏ¢ * #
+# * å¾®è½¯WindowsæœåŠ¡å™¨å®‰å…¨è¡¥ä¸åˆ—è¡¨ä¿¡æ¯ * #
 $Msrc_api = "https://api.msrc.microsoft.com/sug/v2.0/zh-CN/affectedProduct?%24orderBy=releaseDate+desc&%24filter=productFamilyId+in+%28%27100000010%27%29+and+severityId+in+%28%27100000000%27%2C%27100000001%27%29+and+%28releaseDate+gt+2020-01-14T00%3A00%3A00%2B08%3A00%29+and+%28releaseDate+lt+2021-05-22T23%3A59%3A59%2B08%3A00%29"
 $SysWSUSList = @{}
 $SysWSUSListId = @()
 $AvailableWSUSList = @{}
 function F_SysSecurityPolicy {
 
-  # - ÏµÍ³²¹¶¡ÑéÖ¤
+  # - ç³»ç»Ÿè¡¥ä¸éªŒè¯
   if ( $MsrcUpdate -or ! (Test-Path -Path .\WSUSList.json) ) {
     $MSRC_JSON = F_UrlRequest -Msrc_api $Msrc_api
     $MSRC_JSON.value | % { 
@@ -626,25 +626,25 @@ function F_SysSecurityPolicy {
         $SysWSUSList += @{"$($id)"=@{"product"=$product;"articleName"=$articleName;"fixedBuildNumber"=$fixedBuildNumber;"severity"=$severity;"impact"=$impact;"baseScore"=$baseScore;"cveNumber"=$cveNumber;"releaseDate"=$releaseDate }}
       }
     }
-    Write-Host "[-] ÒÑ´Ó Microsoft °²È«ÏìÓ¦ÖĞĞÄ»ñÈ¡¸üĞÂ $($MSRC_JSON.'@odata.count') Ìõ²¹¶¡ĞÅÏ¢!" -ForegroundColor Green
-    Write-Host "[-] ÕıÔÚ½«»ñÈ¡µÄ¸üĞÂ $($MSRC_JSON.'@odata.count') Ìõ²¹¶¡ĞÅÏ¢Ğ´Èëµ½±¾µØ WSUSList.json ÎÄ¼şÖ®ÖĞ!" -ForegroundColor Green
+    Write-Host "[-] å·²ä» Microsoft å®‰å…¨å“åº”ä¸­å¿ƒè·å–æ›´æ–° $($MSRC_JSON.'@odata.count') æ¡è¡¥ä¸ä¿¡æ¯!" -ForegroundColor Green
+    Write-Host "[-] æ­£åœ¨å°†è·å–çš„æ›´æ–° $($MSRC_JSON.'@odata.count') æ¡è¡¥ä¸ä¿¡æ¯å†™å…¥åˆ°æœ¬åœ° WSUSList.json æ–‡ä»¶ä¹‹ä¸­!" -ForegroundColor Green
     $SysWSUSList | ConvertTo-Json | Out-File WSUSList.json -Encoding utf8
     $SysWSUSListId = $SysWSUSList.keys
     $SysWSUSList.keys | ConvertTo-Json | Out-File WSUSListId.json -Encoding utf8
   } else {
-    # ´Ó±¾µØ¶ÁÈ¡JSONÎÄ¼ş´æ´¢µÄ²¹¶¡ĞÅÏ¢¡£
+    # ä»æœ¬åœ°è¯»å–JSONæ–‡ä»¶å­˜å‚¨çš„è¡¥ä¸ä¿¡æ¯ã€‚
     if (Test-Path -Path .\WSUSList.json) {
       $SysWSUSList = Get-Content -Raw -Encoding UTF8 .\WSUSList.json | ConvertFrom-Json
       $SysWSUSListId  = Get-Content -Raw -Encoding UTF8 .\WSUSListId.json | ConvertFrom-Json
-      Write-Host "[-] ÒÑ´Ó±¾µØ WSUSList.json ÎÄ¼ş»ñµÃ $($SysWSUSListId.count) Ìõ²¹¶¡ĞÅÏ¢!" -ForegroundColor Green
+      Write-Host "[-] å·²ä»æœ¬åœ° WSUSList.json æ–‡ä»¶è·å¾— $($SysWSUSListId.count) æ¡è¡¥ä¸ä¿¡æ¯!" -ForegroundColor Green
     } else {
-      Write-Host "[-] ±¾µØÎ´ÄÜÕÒµ½´æ·Å²¹¶¡ĞÅÏ¢µÄ WSUSList.json ÎÄ¼ş! Çë²ÉÓÃ -Update True ±ê¼Ç´ÓMicrosoft °²È«ÏìÓ¦ÖĞĞÄ»ñÈ¡¸üĞÂ" -ForegroundColor Red
+      Write-Host "[-] æœ¬åœ°æœªèƒ½æ‰¾åˆ°å­˜æ”¾è¡¥ä¸ä¿¡æ¯çš„ WSUSList.json æ–‡ä»¶! è¯·é‡‡ç”¨ -Update True æ ‡è®°ä»Microsoft å®‰å…¨å“åº”ä¸­å¿ƒè·å–æ›´æ–°" -ForegroundColor Red
       break
       exit
     }
   }
  
-  # »ñÈ¡µ±Ç°ÏµÍ³°æ±¾¿ÉÓÃµÄ²¹¶¡ÁĞ±í
+  # è·å–å½“å‰ç³»ç»Ÿç‰ˆæœ¬å¯ç”¨çš„è¡¥ä¸åˆ—è¡¨
   $AvailableWSUSListId = @() 
   if ($SysInfo.ProductType -eq "Client") {
     Write-Host "[-] Desktop Client" -ForegroundColor Gray
@@ -666,9 +666,9 @@ function F_SysSecurityPolicy {
     }
   }
   Write-Host $SysInfo.ProductName $SysInfo.WindowsVersion ($SysInfo.CsSystemType -split " ")[0] $SysInfo.OsVersion
-  Write-Host "[-] ÒÑ´ÓÊáÀí³öÊÊÓÃÓÚµ±Ç° $($SysInfo.ProductType) ÏµÍ³°æ±¾µÄ $($AvailableWSUSList.count) Ìõ²¹¶¡ĞÅÏ¢!`n" -ForegroundColor Green
+  Write-Host "[-] å·²ä»æ¢³ç†å‡ºé€‚ç”¨äºå½“å‰ $($SysInfo.ProductType) ç³»ç»Ÿç‰ˆæœ¬çš„ $($AvailableWSUSList.count) æ¡è¡¥ä¸ä¿¡æ¯!`n" -ForegroundColor Green
 
-  # ÒÑ°²×°µÄ²¹¶¡
+  # å·²å®‰è£…çš„è¡¥ä¸
   $InstallWSUSList = @{}
   $msg = @()
   foreach ($id in $AvailableWSUSListId) {
@@ -677,9 +677,9 @@ function F_SysSecurityPolicy {
       $msg += "[+]" + $SysWSUSList."$id".product + $SysWSUSList."$id".fixedBuildNumber + " " +  $SysWSUSList."$id".articleName + "(" + $SysWSUSList."$id".cveNumber   + ")" + $SysWSUSList."$id".severity  + $SysWSUSList."$id".baseScore + "`n"
     } 
   }
-  Write-Host "[-] $($SysInfo.'Hotfix(s)') £¬¹² $($AvailableWSUSList.count) ÌõÂ©¶´²¹¶¡ĞÅÏ¢!`n$($msg)" -ForegroundColor Green
+  Write-Host "[-] $($SysInfo.'Hotfix(s)') ï¼Œå…± $($AvailableWSUSList.count) æ¡æ¼æ´è¡¥ä¸ä¿¡æ¯!`n$($msg)" -ForegroundColor Green
 
-  # Î´°²×°µÄ²¹¶¡
+  # æœªå®‰è£…çš„è¡¥ä¸
   $NotInstallWSUSList = @{}
   $msg = @()
   foreach ($id in $AvailableWSUSListId) {
@@ -688,19 +688,19 @@ function F_SysSecurityPolicy {
      $msg += "[+]" + $SysWSUSList."$id".product + $SysWSUSList."$id".fixedBuildNumber + " " + $SysWSUSList."$id".articleName + "(" + $SysWSUSList."$id".cveNumber + ")" + $SysWSUSList."$id".severity + $SysWSUSList."$id".baseScore + "`n"
     }
   }
-  Write-Host "[-] Î´°²×° $($NotInstallWSUSList.count) ÌõÂ©¶´²¹¶¡ĞÅÏ¢£¬¹² $($AvailableWSUSList.count) ÌõÂ©¶´²¹¶¡ĞÅÏ¢!`n$($msg)" -ForegroundColor red
+  Write-Host "[-] æœªå®‰è£… $($NotInstallWSUSList.count) æ¡æ¼æ´è¡¥ä¸ä¿¡æ¯ï¼Œå…± $($AvailableWSUSList.count) æ¡æ¼æ´è¡¥ä¸ä¿¡æ¯!`n$($msg)" -ForegroundColor red
 }
 
 #
-# * ÔÓÀà¼ì²âº¯Êı * 
+# * æ‚ç±»æ£€æµ‹å‡½æ•° * 
 #
 $OtherCheck = @{}
 function F_OtherCheckPolicy {
-  # - µ±Ç°ÏµÍ³ÒÑ°²×°µÄÈí¼ş
+  # - å½“å‰ç³»ç»Ÿå·²å®‰è£…çš„è½¯ä»¶
   $Product = Get-WmiObject -Class Win32_Product | Select-Object -Property Name,Version,IdentifyingNumber | Sort-Object Name | Out-String
   $OtherCheck += @{"Product"="$($Product)"}
 
-  # - µ±Ç°ÏµÍ³×î½ü·ÃÎÊÎÄ¼ş»òÕßÄ¿Â¼
+  # - å½“å‰ç³»ç»Ÿæœ€è¿‘è®¿é—®æ–‡ä»¶æˆ–è€…ç›®å½•
   $Recent = (Get-ChildItem ~\AppData\Roaming\Microsoft\Windows\Recent).Name
   $OtherCheck += @{"Recent"="$($Recent)"}
   return $OtherCheck
@@ -710,64 +710,64 @@ function F_OtherCheckPolicy {
 function Main() {
 <#
 .SYNOPSIS
-main º¯Êı³ÌĞòÖ´ĞĞÈë¿Ú
+main å‡½æ•°ç¨‹åºæ‰§è¡Œå…¥å£
 .DESCRIPTION
-µ÷ÓÃÉÏÊö±àĞ´µÄÏà¹Ø¼ì²â½Å±¾
+è°ƒç”¨ä¸Šè¿°ç¼–å†™çš„ç›¸å…³æ£€æµ‹è„šæœ¬
 .EXAMPLE
 main
 #>
 
 $ScanStartTime = Get-date -Format 'yyyy-M-d H:m:s'
 F_Logging -Level Info -Msg "#################################################################################"
-F_Logging -Level Info -Msg "- @Desc: Windows Server °²È«ÅäÖÃ²ßÂÔ»ùÏß¼ì²â½Å±¾  [½«»áÔÚGithubÉÏ³ÖĞø¸üĞÂ-star]"
+F_Logging -Level Info -Msg "- @Desc: Windows Server å®‰å…¨é…ç½®ç­–ç•¥åŸºçº¿æ£€æµ‹è„šæœ¬  [å°†ä¼šåœ¨Githubä¸ŠæŒç»­æ›´æ–°-star]"
 F_Logging -Level Info -Msg "- @Author: WeiyiGeek"
 F_Logging -Level Info -Msg "- @Blog: https://www.weiyigeek.top"
-F_Logging -Level Info -Msg "- @Github: https://github.com/WeiyiGeek/SecOpsDev/tree/master/OS-²Ù×÷ÏµÍ³/Windows"
+F_Logging -Level Info -Msg "- @Github: https://github.com/WeiyiGeek/SecOpsDev/tree/master/OS-æ“ä½œç³»ç»Ÿ/Windows"
 F_Logging -Level Info -Msg "#################################################################################`n"
 
-F_Logging -Level Info -Msg "[*] Windows Server °²È«ÅäÖÃ²ßÂÔ»ùÏß¼ì²â½Å±¾ÒÑÆô¶¯."
-F_Logging -Level Info -Msg "[*] ½Å±¾Ö´ĞĞ: $($Executor), ÊÇ·ñÔÚÏßÀ­È¡Î¢Èí°²È«ÖĞĞÄµÄ·şÎñÆ÷°²È«²¹¶¡ÁĞ±íĞÅÏ¢: $($MsrcUpdate)`n"
-# 1.ÅĞ¶Ïµ±Ç°ÔËĞĞµÄpowershellÖÕ¶ËÊÇ·ñ¹ÜÀíÔ±Ö´ĞĞ
-F_Logging -Level Info -Msg "[-] ÕıÔÚ¼ì²âµ±Ç°ÔËĞĞµÄPowerShellÖÕ¶ËÊÇ·ñ¹ÜÀíÔ±È¨ÏŞ...`n"
+F_Logging -Level Info -Msg "[*] Windows Server å®‰å…¨é…ç½®ç­–ç•¥åŸºçº¿æ£€æµ‹è„šæœ¬å·²å¯åŠ¨."
+F_Logging -Level Info -Msg "[*] è„šæœ¬æ‰§è¡Œ: $($Executor), æ˜¯å¦åœ¨çº¿æ‹‰å–å¾®è½¯å®‰å…¨ä¸­å¿ƒçš„æœåŠ¡å™¨å®‰å…¨è¡¥ä¸åˆ—è¡¨ä¿¡æ¯: $($MsrcUpdate)`n"
+# 1.åˆ¤æ–­å½“å‰è¿è¡Œçš„powershellç»ˆç«¯æ˜¯å¦ç®¡ç†å‘˜æ‰§è¡Œ
+F_Logging -Level Info -Msg "[-] æ­£åœ¨æ£€æµ‹å½“å‰è¿è¡Œçš„PowerShellç»ˆç«¯æ˜¯å¦ç®¡ç†å‘˜æƒé™...`n"
 $flag = F_IsCurrentUserAdmin
 if (!($flag)) {
-  F_Logging -Level Error -Msg "[*] ½Å±¾Ö´ĞĞ·¢Éú´íÎó,ÇëÊ¹ÓÃ¹ÜÀíÔ±È¨ÏŞÔËĞĞ¸Ã½Å±¾..ÀıÈç: Start-Process powershell -Verb runAs...."
-  F_Logging -Level Warning -Msg "[*] ÕıÔÚÍË³öÖ´ĞĞ¸Ã½Å±¾......"
+  F_Logging -Level Error -Msg "[*] è„šæœ¬æ‰§è¡Œå‘ç”Ÿé”™è¯¯,è¯·ä½¿ç”¨ç®¡ç†å‘˜æƒé™è¿è¡Œè¯¥è„šæœ¬..ä¾‹å¦‚: Start-Process powershell -Verb runAs...."
+  F_Logging -Level Warning -Msg "[*] æ­£åœ¨é€€å‡ºæ‰§è¡Œè¯¥è„šæœ¬......"
   return
 }
-F_Logging -Level Info -Msg "[*] PowerShell ¹ÜÀíÔ±È¨ÏŞ¼ì²éÍ¨¹ı...`n"
+F_Logging -Level Info -Msg "[*] PowerShell ç®¡ç†å‘˜æƒé™æ£€æŸ¥é€šè¿‡...`n"
 
-# 2.µ±Ç°ÏµÍ³²ßÂÔÅäÖÃÎÄ¼şµ¼³ö (×¢Òâ±ØĞëÏµÍ³¹ÜÀíÔ±È¨ÏŞÔËĞĞ) 
-F_Logging -Level Info -Msg "[-] ÕıÔÚµ¼³öµ±Ç°ÏµÍ³²ßÂÔÅäÖÃÎÄ¼ş config.cfg......`n"
+# 2.å½“å‰ç³»ç»Ÿç­–ç•¥é…ç½®æ–‡ä»¶å¯¼å‡º (æ³¨æ„å¿…é¡»ç³»ç»Ÿç®¡ç†å‘˜æƒé™è¿è¡Œ) 
+F_Logging -Level Info -Msg "[-] æ­£åœ¨å¯¼å‡ºå½“å‰ç³»ç»Ÿç­–ç•¥é…ç½®æ–‡ä»¶ config.cfg......`n"
 secedit /export /cfg config.cfg /quiet
 start-sleep 3
 if ( -not(Test-Path -Path config.cfg)) {
-  F_Logging -Level Error -Msg "[*] µ±Ç°ÏµÍ³²ßÂÔÅäÖÃÎÄ¼ş config.cfg ²»´æÔÚ,Çë¼ì²é......`n"
-  F_Logging -Level Warning -Msg "[*] ÕıÔÚÍË³öÖ´ĞĞ¸Ã½Å±¾......"
+  F_Logging -Level Error -Msg "[*] å½“å‰ç³»ç»Ÿç­–ç•¥é…ç½®æ–‡ä»¶ config.cfg ä¸å­˜åœ¨,è¯·æ£€æŸ¥......`n"
+  F_Logging -Level Warning -Msg "[*] æ­£åœ¨é€€å‡ºæ‰§è¡Œè¯¥è„šæœ¬......"
   return
 } else { 
   Copy-Item -Path config.cfg -Destination config.cfg.bak -Force
 }
 $Config = Get-Content -path config.cfg
 
-# 3.ÏµÍ³Ïà¹ØĞÅÏ¢ÒÔ¼°ÏµÍ³°²È«×é²ßÂÔ¼ì²â
-F_Logging -Level Info -Msg "[-] µ±Ç°ÏµÍ³ĞÅÏ¢Ò»ÀÀ"
+# 3.ç³»ç»Ÿç›¸å…³ä¿¡æ¯ä»¥åŠç³»ç»Ÿå®‰å…¨ç»„ç­–ç•¥æ£€æµ‹
+F_Logging -Level Info -Msg "[-] å½“å‰ç³»ç»Ÿä¿¡æ¯ä¸€è§ˆ"
 $SysInfo = F_SysInfo
 $SysInfo
 
-F_Logging -Level Info -Msg "[-] µ±Ç°ÏµÍ³ÍøÂçĞÅÏ¢Ò»ÀÀ"
+F_Logging -Level Info -Msg "[-] å½“å‰ç³»ç»Ÿç½‘ç»œä¿¡æ¯ä¸€è§ˆ"
 $SysNetAdapter = F_SysNetAdapter
 $SysNetAdapter
 
-F_Logging -Level Info -Msg "[-] µ±Ç°ÏµÍ³´ÅÅÌĞÅÏ¢Ò»ÀÀ"
+F_Logging -Level Info -Msg "[-] å½“å‰ç³»ç»Ÿç£ç›˜ä¿¡æ¯ä¸€è§ˆ"
 $SysDisk = F_SysDisk
 $SysDisk
 
-F_Logging -Level Info -Msg "[-] µ±Ç°ÏµÍ³ÕË»§ĞÅÏ¢Ò»ÀÀ"
+F_Logging -Level Info -Msg "[-] å½“å‰ç³»ç»Ÿè´¦æˆ·ä¿¡æ¯ä¸€è§ˆ"
 $SysAccount = F_SysAccount
 $SysAccount
 
-F_Logging -Level Info -Msg "[-] µ±Ç°ÏµÍ³°²È«²ßÂÔĞÅÏ¢Ò»ÀÀ"
+F_Logging -Level Info -Msg "[-] å½“å‰ç³»ç»Ÿå®‰å…¨ç­–ç•¥ä¿¡æ¯ä¸€è§ˆ"
 $SysAccountPolicy.CheckResults = F_SysAccountPolicy
 $SysEventAuditPolicy.CheckResults = F_SysEventAuditPolicy
 $SysUserPrivilegePolicy.CheckResults = F_SysUserPrivilegePolicy
@@ -775,16 +775,16 @@ $SysSecurityOptionPolicy.CheckResults = F_SysSecurityOptionPolicy
 $SysRegistryPolicy.CheckResults = F_SysRegistryPolicy
 $SysProcessServicePolicy.CheckResults = F_SysProcessServicePolicy
 
-F_Logging -Level Info -Msg "[-] µ±Ç°ÏµÍ³ÔÓÀàĞÅÏ¢Ò»ÀÀ"
+F_Logging -Level Info -Msg "[-] å½“å‰ç³»ç»Ÿæ‚ç±»ä¿¡æ¯ä¸€è§ˆ"
 $OtherCheck = F_OtherCheckPolicy
 $OtherCheck.Values
 
-F_Logging -Level Info -Msg "[-] µ±Ç°ÏµÍ³°²È«²¹¶¡Çé¿öĞÅÏ¢Ò»ÀÀ"
+F_Logging -Level Info -Msg "[-] å½“å‰ç³»ç»Ÿå®‰å…¨è¡¥ä¸æƒ…å†µä¿¡æ¯ä¸€è§ˆ"
 F_SysSecurityPolicy
 
-# 4.³ÌĞòÖ´ĞĞÍê±Ï
+# 4.ç¨‹åºæ‰§è¡Œå®Œæ¯•
 $ScanEndTime = Get-date -Format 'yyyy-M-d H:m:s'
-F_Logging -Level Info -Msg "- Windows Server °²È«ÅäÖÃ²ßÂÔ»ùÏß¼ì²â½Å±¾ÒÑÖ´ĞĞÍê±Ï......`n¿ªÊ¼Ê±¼ä£º${ScanStartTime}`nÍê³ÉÊ±¼ä: ${ScanEndTime}"
+F_Logging -Level Info -Msg "- Windows Server å®‰å…¨é…ç½®ç­–ç•¥åŸºçº¿æ£€æµ‹è„šæœ¬å·²æ‰§è¡Œå®Œæ¯•......`nå¼€å§‹æ—¶é—´ï¼š${ScanStartTime}`nå®Œæˆæ—¶é—´: ${ScanEndTime}"
 }
 
 Main
