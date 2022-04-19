@@ -245,8 +245,8 @@ Function F_SysInfo {
 #  * 系统网络及适配器信息变量 * #
 $SysNetAdapter = @{}
 function F_SysNetAdapter {
-  # - 计算机Mac及IP地址信息
-  $Adapter = Get-NetAdapter | Sort-Object -Property LinkSpeed
+  # - 计算机中已启用的网卡、Mac及IP地址信息
+  $Adapter = Get-NetAdapter | Where-Object {$_.Status -eq "Up"} | Sort-Object -Property LinkSpeed
   foreach ( $Item in $Adapter) {
     $IPAddress = (Get-NetIPAddress -AddressFamily IPv4 -InterfaceIndex $Item.ifIndex).IPAddress
     $SysNetAdapter += @{"$($Item.MacAddress)"="$($Item.Status) | $($Item.Name) | $($IPAddress) | $($Item.LinkSpeed) | $($Item.InterfaceDescription)"}
