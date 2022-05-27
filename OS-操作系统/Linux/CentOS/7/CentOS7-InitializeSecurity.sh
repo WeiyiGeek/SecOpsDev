@@ -646,24 +646,24 @@ reboot
 
 
 ## 名称: os::Swap
-## 用途: Liunx 系统创建SWAP交换分区(默认2G)
+## 用途: Liunx 系统创建SWAP交换分区(默认2G)-基本用不到，注释
 ## 参数: $1(几G)
-os::Swap () {
-  if [ -e $1 ];then
-    sudo dd if=/dev/zero of=/swapfile bs=1024 count=2097152   # 2G Swap 分区 1024 * 1024 , centos 以 1000 为标准
-  else
-    number=$(echo "${1}*1024*1024"|bc)
-    sudo dd if=/dev/zero of=/swapfile bs=1024 count=${number}   # 2G Swap 分区 1024 * 1024 , centos 以 1000 为标准
-  fi
+# os::Swap () {
+#   if [ -e $1 ];then
+#     sudo dd if=/dev/zero of=/swapfile bs=1024 count=2097152   # 2G Swap 分区 1024 * 1024 , centos 以 1000 为标准
+#   else
+#     number=$(echo "${1}*1024*1024"|bc)
+#     sudo dd if=/dev/zero of=/swapfile bs=1024 count=${number}   # 2G Swap 分区 1024 * 1024 , centos 以 1000 为标准
+#   fi
 
-  sudo mkswap /swapfile && sudo swapon /swapfile
-  if [ $(grep -c "/swapfile" /etc/fstab) -eq 0 ];then
-sudo tee -a /etc/fstab <<'EOF'
-/swapfile swap swap default 0 0
-EOF
-fi
-sudo swapon --show && sudo free -h
-}
+#   sudo mkswap /swapfile && sudo swapon /swapfile
+#   if [ $(grep -c "/swapfile" /etc/fstab) -eq 0 ];then
+# sudo tee -a /etc/fstab <<'EOF'
+# /swapfile swap swap default 0 0
+# EOF
+# fi
+# sudo swapon --show && sudo free -h
+# }
 
 
 ## 名称: software::Java
@@ -696,7 +696,7 @@ EOF
 ## 用途: CentOS7 操作系统磁盘 LVS 逻辑卷添加与配置(扩容流程)
 ## 参数: 无
 disk::lvsmanager () {
-  echo "\n分区信息:"
+  echo -e "\n 分区信息: "
   sudo df -Th
   sudo lsblk
   echo -e "\n 磁盘信息："
@@ -707,8 +707,8 @@ disk::lvsmanager () {
   sudo vgs
   echo -e "\n lvscan逻辑卷扫描:"
   sudo lvscan
-  echo -e "\n 分区扩展"
-  echo "CentOS \n lvextend -L +24G /dev/centos/root"
+  echo -e "\n 分区扩展脚本："
+  echo -e "CentOS \n # lvextend -L +24G /dev/centos/root"
   echo "lsblk"
   echo -e "Centos \n # xfs_growfs /dev/mapper/centos-root"
 }
