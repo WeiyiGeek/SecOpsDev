@@ -95,7 +95,7 @@ cp ${NET_FILE}{,.bak}
 sed -i -e 's/^ONBOOT=.*$/ONBOOT="yes"/' -e 's/^BOOTPROTO=.*$/BOOTPROTO="static"/' ${NET_FILE}
 grep -q "^IPADDR=.*$" ${NET_FILE} &&  sed -i "s/^IPADDR=.*$/IPADDR=\"${IPADDR}\"/" ${NET_FILE} || echo "IPADDR=\"${IPADDR}\"" >> ${NET_FILE}
 grep -q "^NETMASK=.*$" ${NET_FILE} &&  sed -i "s/^NETMASK=.*$/NETMASK=\"${NETMASK}\"/" ${NET_FILE} || echo "NETMASK=\"${NETMASK}\"" >> ${NET_FILE}
-grep -q "^GATEWAY=.*$" ${NET_FILE} &&  sed -i "s/^GATEWAY=.*$/IPADDR=\"${GATEWAY}\"/" ${NET_FILE} || echo "GATEWAY=\"${GATEWAY}\"" >> ${NET_FILE}
+grep -q "^GATEWAY=.*$" ${NET_FILE} &&  sed -i "s/^GATEWAY=.*$/GATEWAY=\"${GATEWAY}\"/" ${NET_FILE} || echo "GATEWAY=\"${GATEWAY}\"" >> ${NET_FILE}
 EOF
 chmod +x /opt/network.sh
 /opt/network.sh ${IPADDR} ${NETMASK} ${GATEWAY}
