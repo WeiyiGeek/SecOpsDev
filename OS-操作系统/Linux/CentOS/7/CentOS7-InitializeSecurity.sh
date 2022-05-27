@@ -194,6 +194,7 @@ makestep 1.0 3
 #noclientlog
 #logchange 0.5
 EOF
+systemctl status chronyd || yum -y install chrony
 systemctl enable chronyd && systemctl restart chronyd && systemctl status chronyd -l
 
 # 将当前的 UTC 时间写入硬件时钟 (硬件时间默认为UTC)
