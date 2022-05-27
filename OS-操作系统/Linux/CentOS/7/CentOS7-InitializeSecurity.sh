@@ -716,7 +716,7 @@ disk::lvsmanager () {
 
 # 安全加固过程临时文件清理为基线镜像做准备
 unalias rm
-find ~/.trash/* -delete
+find ~/ -type d -name .trash -exec find {} -delete \;
 find /home/ -type d -name .trash -exec find {} -delete \;
 find /var/log -name "*.gz" -delete
 find /var/log -name "*log.*" -delete
