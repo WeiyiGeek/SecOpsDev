@@ -30,12 +30,12 @@ DNSIP=("223.5.5.5" "223.6.6.6")
 SSHPORT=20211
 
 # [用户设置]
-DefaultUser="WeiyiGeek"  # 系统创建的用户名称非root用户
-ROOTPASS=WeiyiGeek       # 密码建议12位以上且包含数字、大小写字母以及特殊字符。
-APPPASS=WeiyiGeek
+DefaultUser="geek"  # 系统创建的用户名称非root用户
+ROOTPASS=geek@SecOpsDev.2022       # 密码建议12位以上且包含数字、大小写字母以及特殊字符。
+APPPASS=geek@SecOpsDev.2022
 
 # [SNMP配置]
-SNMP_user=WeiyiGeek
+SNMP_user=geek
 SNMP_group=testgroup
 SNMP_view=testview
 SNMP_password=dont_use_public
