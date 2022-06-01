@@ -27,6 +27,14 @@ DefaultUser="geek"  # 系统创建的用户名称非root用户
 ROOTPASS=geek@SecOpsDev.2022       # 密码建议12位以上且包含数字、大小写字母以及特殊字符。
 APPPASS=geek@SecOpsDev.2022
 
+# [配置备份目录]
+BACKUPDIR=/var/log/.backups
+if [ ! -d ${BACKUPDIR} ];then  mkdir -vp ${BACKUPDIR}; fi
+
+# [配置记录目录]
+HISDIR=/var/log/.history
+if [ ! -d ${HISDIR} ];then  mkdir -vp ${HISDIR}; fi
+
 ## 名称: err 、info 、warning
 ## 用途：全局Log信息打印函数
 ## 参数: $@
