@@ -23,9 +23,9 @@ IP=192.168.1.2
 GATEWAY=192.168.1.1
 DNSIP=("223.5.5.5" "223.6.6.6")
 SSHPORT=20211
-DefaultUser="WeiyiGeek"  # 系统创建的用户名称非root用户
-ROOTPASS=WeiyiGeek       # 密码建议12位以上且包含数字、大小写字母以及特殊字符。
-APPPASS=WeiyiGeek
+DefaultUser="geek"  # 系统创建的用户名称非root用户
+ROOTPASS=geek@SecOpsDev.2022       # 密码建议12位以上且包含数字、大小写字母以及特殊字符。
+APPPASS=geek@SecOpsDev.2022
 
 ## 名称: err 、info 、warning
 ## 用途：全局Log信息打印函数
