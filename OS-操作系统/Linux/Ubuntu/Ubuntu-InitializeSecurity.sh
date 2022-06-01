@@ -449,10 +449,9 @@ for i in $*;do
   mv $i ${TRASH_DIR}/${fileName}.${STAMP}
 done
 EOF
-sudo chmod +775 /usr/local/bin/remove.sh /etc/profile.d/alias.sh /etc/profile.d/history-record.sh
-sudo chmod a+x /usr/local/bin/remove.sh /etc/profile.d/alias.sh /etc/profile.d/history-record.sh
-source /etc/profile.d/alias.sh  /etc/profile.d/history-record.sh
-
+sudo chmod +775 /usr/local/bin/remove.sh /etc/profile.d/alias.sh
+sudo chmod a+x /usr/local/bin/remove.sh /etc/profile.d/alias.sh
+source /etc/profile.d/alias.sh
 
 # (2) 解决普通定时任务无法后台定时执行
 log::info "[-] 解决普通定时任务无法后台定时执行 "
