@@ -476,10 +476,10 @@ sudo touch /etc/cloud/cloud-init.disabled
 
 
 
-## 名称: os::optimizationn
+## 名称: os::Optimization
 ## 用途: 操作系统优化设置(内核参数)
 ## 参数: 无
-os::optimizationn () {
+os::Optimization () {
 log::info "[-] 正在进行操作系统内核参数优化设置......."
 
 # (1) 系统内核参数的配置(/etc/sysctl.conf)
