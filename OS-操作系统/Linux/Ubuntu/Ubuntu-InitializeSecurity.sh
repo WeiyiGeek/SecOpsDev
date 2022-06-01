@@ -133,9 +133,9 @@ echo "同步前的时间: $(date -R)"
 # 方式1.Chrony 客户端配置
 apt install -y chrony
 grep -q "192.168.12.254" /etc/chrony/chrony.conf || sudo tee -a /etc/chrony/chrony.conf <<'EOF'
+pool 192.168.4.254 iburst maxsources 1
 pool 192.168.10.254 iburst maxsources 1
 pool 192.168.12.254 iburst maxsources 1
-pool 192.168.4.254 iburst maxsources 1
 pool ntp.aliyun.com iburst maxsources 4
 keyfile /etc/chrony/chrony.keys
 driftfile /var/lib/chrony/chrony.drift
@@ -291,6 +291,7 @@ log::info "[-] 远程SSH登录前后提示警告Banner设置"
 sudo tee /etc/issue <<'EOF'
 ****************** [ 安全登陆 (Security Login) ] *****************
 Authorized only. All activity will be monitored and reported.By Security Center.
+Owner: WeiyiGeek, Site: https://www.weiyigeek.top
 
 EOF
 # SSH登录后提示Banner
@@ -318,7 +319,7 @@ mkdir -vp /usr/local/bin /var/log/.backups /var/log/.history /var/log/.history/s
 cp /usr/bin/su /var/log/.backups/su.bak
 mv /usr/bin/su /usr/bin/SU
 # 只能写入不能删除其目标目录中的文件
-# chmod -R 1777 /var/log/.history
+chmod -R 1777 /var/log/.history
 chattr -R +a /var/log/.history 
 chattr +a /var/log/.backups
 
@@ -499,9 +500,9 @@ net.ipv4.tcp_syn_retries = 1
 net.ipv4.tcp_fastopen = 3
 
 # 优化TCP的可使用端口范围及提升服务器并发能力(注意一般流量小的服务器上没必要设置如下参数)
-net.ipv4.tcp_keepalive_time = 1200
+net.ipv4.tcp_keepalive_time = 7200
 net.ipv4.tcp_max_syn_backlog = 8192
-net.ipv4.tcp_max_tw_buckets = 5000
+net.ipv4.tcp_max_tw_buckets = 16384
 net.ipv4.ip_local_port_range = 1024 65535
 
 # 优化核套接字TCP的缓存区
@@ -646,7 +647,8 @@ sudo tee /etc/docker/daemon.json <<-'EOF'
     "max-file": "10"
   },
   "live-restore": true,
-  "dns": ["192.168.10.254","223.6.6.6"]
+  "dns": ["192.168.12.254","223.6.6.6"],
+  "insecure-registries": [ "harbor.weiyigeek.top","harbor.cloud"]
 }
 EOF
   # "data-root":"/monitor/container",

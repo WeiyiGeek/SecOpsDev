@@ -128,6 +128,12 @@ os::Software () {
 curl -o /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
 curl -o /etc/yum.repos.d/CentOS-epel.repo http://mirrors.aliyun.com/repo/epel-7.repo
 sed -i "s#mirrors.cloud.aliyuncs.com#mirrors.aliyun.com#g" /etc/yum.repos.d/CentOS-Base.repo
+sed -i "s#mirrors.aliyuncs.com#mirrors.aliyun.com#g" /etc/yum.repos.d/CentOS-Base.repo
+# 代理方式设置
+# curl -x 192.168.12.215:3128 -o /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
+# tee -a /etc/yum.conf <<'EOF'
+# proxy=http://192.168.12.215:3128/
+# EOF
 rpm --import http://mirrors.aliyun.com/centos/RPM-GPG-KEY-CentOS-7
 yum clean all && yum makecache
 yum --exclude=kernel* update -y && yum upgrade -y &&  yum -y install epel*
@@ -157,7 +163,7 @@ reboot
 # 编译软件
 yum install -y gcc gcc-c++ g++ make jq libpam-cracklib openssl-devel bzip2-devel
 # 常规软件
-yum install -y nano vim git unzip wget ntpdate dos2unix net-tools
+yum install -y nano vim git unzip wget ntpdate dos2unix net-tools policycoreutils-python
 yum install -y tree htop ncdu nload sysstat psmisc bash-completion fail2ban nfs-utils chrony
 # 清空缓存和已下载安装的软件包
 yum clean all
@@ -469,7 +475,8 @@ egrep -q "^\s*\*\.err;kern.debug;daemon.notice\s+.+$" /etc/rsyslog.conf && sed -
 # (10) 关闭CentOS服务器中 SELINUX 以及防火墙端口放行
   log::info "[-] SELINUX 禁用以及系统防火墙规则设置 "
 sed -i "s/SELINUX=enforcing/SELINUX=disabled/g" /etc/selinux/config 
-semanage port -m -t ssh_port_t -p tcp 20211 # 添加sshd服务20211端口到SELinux
+# 添加sshd服务20211端口到SELinux
+semanage port -m -t ssh_port_t -p tcp 20211 
 firewall-cmd --zone=public --add-port=20211/tcp --permanent
 firewall-cmd --zone=public --add-port=161/udp --permanent
 firewall-cmd --reload
