@@ -253,7 +253,7 @@ echo "root:${ROOTPASS}" | chpasswd
 
 log::info "[-] 配置满足策略的app普通用户密码(根据需求配置)"
 groupadd application
-useradd -m -s /bin/bash -c "application primary user" -g application app 
+useradd -m -s /bin/bash -c "application primary user" -g application ${DefaultUser} 
 echo "root:${APPPASS}" | chpasswd
  
 log::info "[-] 强制用户在下次登录时更改密码 "
