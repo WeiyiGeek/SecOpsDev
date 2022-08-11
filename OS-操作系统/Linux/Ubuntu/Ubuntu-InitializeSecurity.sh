@@ -90,6 +90,10 @@ sudo systemctl stop snapd snapd.socket #停止snapd相关的进程服务
 sudo apt autoremove --purge -y snapd
 sudo systemctl daemon-reload
 sudo rm -rf ~/snap /snap /var/snap /var/lib/snapd /var/cache/snapd /run/snapd
+# 彻底移除 cloud-init 重启
+sudo apt purge cloud-init -y
+sudo rm -rf /etc/cloud && sudo rm -rf /var/lib/cloud/
+
 
 # (2) 软件源设置与系统更新
 sudo cp /etc/apt/sources.list{,.bak}
@@ -512,6 +516,10 @@ net.core.rmem_max = 12582912
 net.core.rmem_default = 6291456
 net.core.wmem_max = 12582912
 net.core.wmem_default = 6291456
+
+# 内存缓存IO优化
+vm.dirty_background_ratio = 5
+vm.dirty_ratio = 10
 EOF
 
 
@@ -693,4 +701,4 @@ find /var/log -name "*log.*" -delete
 find /var/log -name "vmware-*.*.log" -delete
 find /var/log -name "*.log-*" -delete
 find /var/log -name "*.log" -exec truncate -s 0 {} \;
-find /tmp/* -delete
+find /tmp/ -name "*" -delete
