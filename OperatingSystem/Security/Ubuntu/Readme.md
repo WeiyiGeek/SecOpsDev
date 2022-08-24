@@ -2,6 +2,16 @@
 
 描述: 本工具集主要针对于 Ubuntu 22.04 、20.04  LTS 操作系统进行安全加固以及系统初始化操作。
 
+欢迎访问作者个人主页与博客，以及关注微信公众号【WeiyiGeek】，将会分享更多工具。
+
+个人主页: https://www.weiyigeek.top
+
+博客地址：https://blog.weiyigeek.top
+
+学习交流群：https://weiyigeek.top/visit.html
+
+
+
 :atom_symbol:**脚本说明:**
 
 ```bash
