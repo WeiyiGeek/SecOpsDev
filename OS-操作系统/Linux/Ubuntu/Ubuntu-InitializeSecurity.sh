@@ -2,7 +2,7 @@
 # @Author: WeiyiGeek
 # @Description: Ubuntu TLS Security Initiate
 # @Create Time:  2019年9月1日 16:43:33
-# @Last Modified time: 2021-11-15 11:06:31
+# @Last Modified time: 2020-11-15 11:06:31
 # @E-mail: master@weiyigeek.top
 # @Blog: https://www.weiyigeek.top
 # @wechat: WeiyiGeeker
@@ -23,9 +23,11 @@ IP=192.168.1.2
 GATEWAY=192.168.1.1
 DNSIP=("223.5.5.5" "223.6.6.6")
 SSHPORT=20211
-DefaultUser="WeiyiGeek"  # 系统创建的用户名称非root用户
-ROOTPASS=WeiyiGeek       # 密码建议12位以上且包含数字、大小写字母以及特殊字符。
-APPPASS=WeiyiGeek
+ROOTPASS=r2022.WeiyiGeek.top       # 密码建议12位以上且包含数字、大小写字母以及特殊字符
+USERNAME="WeiyiGeek"  # 系统创建的用户名称非root用户
+USERPASS=u2022.WeiyiGeek.top
+APPUSER=app
+APPPASS=a2022.WeiyiGeek.top
 
 ## 名称: err 、info 、warning
 ## 用途：全局Log信息打印函数
@@ -197,7 +199,7 @@ defaultuser=(root daemon bin sys games man lp mail news uucp proxy www-data back
 for i in $(cat /etc/passwd | cut -d ":" -f 1,7);do
   flag=0; name=${i%%:*}; terminal=${i##*:}
   if [[ "${terminal}" == "/bin/bash" || "${terminal}" == "/bin/sh" ]];then
-    log::warning "${i} 用户，shell终端为 /bin/bash 或者 /bin/sh"
+    log::warning "${name} 用户，shell终端为 /bin/bash 或者 /bin/sh"
   fi
   for j in ${defaultuser[@]};do
     if [[ "${name}" == "${j}" ]];then
@@ -206,7 +208,7 @@ for i in $(cat /etc/passwd | cut -d ":" -f 1,7);do
     fi
   done
   if [[ $flag -eq 0 ]];then
-    log::warning "${i} 非默认用户"
+    log::warning "${name} 非默认用户"
   fi
 done
 cp /etc/shadow /etc/shadow-`date +%Y%m%d`.bak
@@ -214,17 +216,22 @@ passwd -l adm&>/dev/null 2&>/dev/null; passwd -l daemon&>/dev/null 2&>/dev/null;
 
 # (2) 用户密码设置和口令策略设置
   log::info "[-]  配置满足策略的root管理员密码 "
-echo  ${ROOTPASS} | passwd --stdin root
+  echo  "root:${ROOTPASS}" | chpasswd
 
-log::info "[-] 配置满足策略的app普通用户密码(根据需求配置)"
-groupadd application
-useradd -m -s /bin/bash -c "application primary user" -g application app 
-echo ${APPPASS} | passwd --stdin app
+  log::info "[-]  配置满足策略的${USERNAME}管理员密码 "
+  echo  "${USERNAME}:${USERPASS}" | chpasswd
+
+  log::info "[-] 配置满足策略的app普通用户密码(根据需求配置)"
+  groupadd ${APPUSER}
+  useradd -m -s /bin/bash -c "application primary user" -g ${APPUSER} ${APPUSER} 
+  echo  "${APPUSER}:${APPPASS}" | chpasswd
+
 
   log::info "[-] 强制用户在下次登录时更改密码 "
-chage -d 0 -m 0 -M 90 -W 15 root && passwd --expire root 
-chage -d 0 -m 0 -M 90 -W 15 ${DefaultUser} && passwd --expire ${DefaultUser} 
-chage -d 0 -m 0 -M 90 -W 15 app && passwd --expire app
+  chage -d 0 -m 0 -M 90 -W 15 root && passwd --expire root 
+  chage -d 0 -m 0 -M 90 -W 15 ${USERNAME} && passwd --expire ${USERNAME} 
+  chage -d 0 -m 0 -M 90 -W 15 ${APPUSER} && passwd --expire ${APPUSER}
+
 
   log::info "[-] 用户口令复杂性策略设置 (密码过期周期0~90、到期前15天提示、密码长度至少15、复杂度设置至少有一个大小写、数字、特殊字符、密码三次不能一样、尝试次数为三次)"
 egrep -q "^\s*PASS_MIN_DAYS\s+\S*(\s*#.*)?\s*$" /etc/login.defs && sed -ri "s/^(\s*)PASS_MIN_DAYS\s+\S*(\s*#.*)?\s*$/\PASS_MIN_DAYS  0/" /etc/login.defs || echo "PASS_MIN_DAYS  0" >> /etc/login.defs
@@ -241,15 +248,16 @@ touch /etc/security/opasswd && chown root:root /etc/security/opasswd && chmod 60
 
 # (3) 用户sudo权限以及重要目录和文件的权限设置
   log::info "[-] 用户sudo权限以及重要目录和文件的新建默认权限设置"
-# 如uBuntu安装时您创建的用户 WeiyiGeek 防止直接通过 sudo passwd 修改root密码(此时必须要求输入WeiyiGeek密码后才可修改root密码)
+# 如ubuntu安装时您创建的用户 WeiyiGeek 防止直接通过 sudo passwd 修改root密码(此时必须要求输入WeiyiGeek密码后才可修改root密码)
 # Tips: Sudo允许授权用户权限以另一个用户（通常是root用户）的身份运行程序, 
-# DefaultUser="weiyigeek"
-sed -i "/# Members of the admin/i ${DefaultUser} ALL=(ALL) PASSWD:ALL" /etc/sudoers
+# USERNAME="weiyigeek"
+sed -i "/# Members of the admin/i ${USERNAME} ALL=(ALL) PASSWD:ALL" /etc/sudoers
 
 
   log::info "[-] 配置用户 umask 为022 "
 egrep -q "^\s*umask\s+\w+.*$" /etc/profile && sed -ri "s/^\s*umask\s+\w+.*$/umask 022/" /etc/profile || echo "umask 022" >> /etc/profile
 egrep -q "^\s*umask\s+\w+.*$" /etc/bash.bashrc && sed -ri "s/^\s*umask\s+\w+.*$/umask 022/" /etc/bashrc || echo "umask 022" >> /etc/bash.bashrc
+
 # log::info "[-] 设置用户目录创建默认权限, (初始为077比较严格)，在设置 umask 为022 及 777 - 022 "
 # egrep -q "^\s*(umask|UMASK)\s+\w+.*$" /etc/login.defs && sed -ri "s/^\s*(umask|UMASK)\s+\w+.*$/UMASK 022/" /etc/login.defs || echo "UMASK 022" >> /etc/login.defs
 
@@ -287,6 +295,8 @@ sudo egrep -q "^\s*AllowAgentForwarding\s+.+$" /etc/ssh/sshd_config && sed -ri "
 egrep -q "^(#)?\s*IgnoreRhosts\s+.+$" /etc/ssh/sshd_config && sed -ri "s/^(#)?\s*IgnoreRhosts\s+.+$/IgnoreRhosts yes/" /etc/ssh/sshd_config || echo "IgnoreRhosts yes" >> /etc/ssh/sshd_config
 # 禁止root远程登录（推荐配置-根据需求配置）
 egrep -q "^\s*PermitRootLogin\s+.+$" /etc/ssh/sshd_config && sed -ri "s/^\s*PermitRootLogin\s+.+$/PermitRootLogin no/" /etc/ssh/sshd_config || echo "PermitRootLogin no" >> /etc/ssh/sshd_config
+
+
 # 登陆前后欢迎提示设置
 egrep -q "^\s*(banner|Banner)\s+\W+.*$" /etc/ssh/sshd_config && sed -ri "s/^\s*(banner|Banner)\s+\W+.*$/Banner \/etc\/issue/" /etc/ssh/sshd_config || \
 echo "Banner /etc/issue" >> /etc/ssh/sshd_config
@@ -295,7 +305,7 @@ log::info "[-] 远程SSH登录前后提示警告Banner设置"
 sudo tee /etc/issue <<'EOF'
 ****************** [ 安全登陆 (Security Login) ] *****************
 Authorized only. All activity will be monitored and reported.By Security Center.
-Owner: WeiyiGeek, Site: https://www.weiyigeek.top
+Author: WeiyiGeek, Site: https://www.weiyigeek.top
 
 EOF
 # SSH登录后提示Banner
