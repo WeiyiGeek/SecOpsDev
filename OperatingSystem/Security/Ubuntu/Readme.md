@@ -189,7 +189,7 @@ chmod +x -R *
 Ubuntu22.04-InitializeReinforce.sh  --start
 ```
 
-![image-20220823143235577](.\Readme.assets\image-20220823143235577.png)
+![image-20220823143235577](./Readme.assets/image-20220823143235577.png)
 
 
 
@@ -199,7 +199,8 @@ ssh -p 20221 ubuntu@10.10.99.236
 su - root
 ```
 
-![image-20220823143354742](.\Readme.assets\image-20220823143354742.png)
+![image-20220823143354742](./Readme.assets/image-20220823143354742.png)
 
 温馨提示：脚本中默认root密码为`R2022.weiyigeek.top`。
+
 温馨提示: 防火墙策略只开放了80，443，22，20221等端口。
