@@ -48,7 +48,7 @@ CURRENT_IP=$(hostname -I | cut -f 1 -d " ")
 CURRENT_GATEWAY=$(hostname -I | cut -f 1,2,3 -d ".")
 echo "Setting IP: ${1} GATEWAY: ${2}"
 sudo sed -i -e "s#${CURRENT_IP}.*#${1}#" -e "s#gateway4:.*#gateway4: ${2}#" /etc/netplan/00-installer-config.yaml
-read -t 5 -p "Heavy load network card, It is recommended to enter N during initialization (Y/N): " VERTIFY
+read -t ${VAR_VERIFY_TIMEOUT} -p "Heavy load network card, It is recommended to enter N during initialization (Y/N): " VERTIFY
 if [[ ${VERIFY:="N"} == "Y" || ${VERIFY:="N"} == "y" ]]; then
   sudo netplan apply
 else

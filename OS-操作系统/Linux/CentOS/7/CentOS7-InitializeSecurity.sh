@@ -7,14 +7,14 @@
 # @Blog: https://www.weiyigeek.top
 # @wechat: WeiyiGeeker
 # @Github: https://github.com/WeiyiGeek/SecOpsDev/tree/master/OS-操作系统/Linux/
-# @Version: 3.3
+# @Version: 3.4
 ## ----------------------------------------- ##
 # 脚本主要功能说明:
 # (1) CentOS7系统初始化操作包括IP地址设置、基础软件包更新以及安装加固。
 # (2) CentOS7系统容器以及JDK相关环境安装。
 # (3) CentOS7系统中异常错误日志解决。
 # (4) CentOS7系统中常规服务安装配置，加入数据备份目录。
-# (4) CentOS7脚本错误解决和优化
+# (5) CentOS7脚本错误解决和优化 - 2022年9月23日 14:41:00
 ## ----------------------------------------- ##
 
 ## 系统全局变量定义
@@ -30,7 +30,7 @@ DNSIP=("223.5.5.5" "223.6.6.6")
 SSHPORT=20211
 
 # [用户设置]
-DefaultUser="WeiyiGeek"  # 系统创建的用户名称非root用户
+DefaultUser="WeiyiGeek"  # 系统创建的用户名称非root管理用户
 ROOTPASS=WeiyiGeek       # 密码建议12位以上且包含数字、大小写字母以及特殊字符。
 APPPASS=WeiyiGeek
 
@@ -95,7 +95,7 @@ cp ${NET_FILE}{,.bak}
 sed -i -e 's/^ONBOOT=.*$/ONBOOT="yes"/' -e 's/^BOOTPROTO=.*$/BOOTPROTO="static"/' ${NET_FILE}
 grep -q "^IPADDR=.*$" ${NET_FILE} &&  sed -i "s/^IPADDR=.*$/IPADDR=\"${IPADDR}\"/" ${NET_FILE} || echo "IPADDR=\"${IPADDR}\"" >> ${NET_FILE}
 grep -q "^NETMASK=.*$" ${NET_FILE} &&  sed -i "s/^NETMASK=.*$/NETMASK=\"${NETMASK}\"/" ${NET_FILE} || echo "NETMASK=\"${NETMASK}\"" >> ${NET_FILE}
-grep -q "^GATEWAY=.*$" ${NET_FILE} &&  sed -i "s/^GATEWAY=.*$/IPADDR=\"${GATEWAY}\"/" ${NET_FILE} || echo "GATEWAY=\"${GATEWAY}\"" >> ${NET_FILE}
+grep -q "^GATEWAY=.*$" ${NET_FILE} &&  sed -i "s/^GATEWAY=.*$/GATEWAY=\"${GATEWAY}\"/" ${NET_FILE} || echo "GATEWAY=\"${GATEWAY}\"" >> ${NET_FILE}
 EOF
 chmod +x /opt/network.sh
 /opt/network.sh ${IPADDR} ${NETMASK} ${GATEWAY}
@@ -185,6 +185,7 @@ cp -a /etc/localtime ${BACKUPDIR}/localtime.bak
 ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
 # (2) 时间同步软件安装
+systemctl status chronyd || yum -y install chrony
 grep -q "192.168.12.254" /etc/chrony.conf || sudo tee -a /etc/chrony.conf <<'EOF'
 pool 192.168.12.254 iburst maxsources 1
 pool 192.168.10.254 iburst maxsources 1
@@ -431,8 +432,8 @@ sed -i -e 's|set timeout_style=${style}|#set timeout_style=${style}|g' -e 's|set
 sudo grub2-mkpasswd-pbkdf2
 # 输入口令：
 # Reeter password:n
-PBKDF2 hash of your password is grub.pbkdf2.sha512.10000.A4A6B06EFAB660C11DD8EBC3BE73C5AB5D763ED937060477DB533B3E7D60F1DE66C3AC12DA795B46762AB8C4A1911B69B94FFCD88FB4499938150405DCB116F8.35D290F5B8D2677AEE5E8BAB4DB133206D417F99A26B14EAB8D0A5379DCD3632F40037388C9D2CA3001E0D6A8B74837549970EEEAEC3420CE38E2236DE1A8565
-# 设置认证用户以及上面生成的password_pbkdf2认证密钥
+# PBKDF2 hash of your password is grub.pbkdf2.sha512.10000.A4A6B06EFAB660C11DD8EBC3BE73C5AB5D763ED937060477DB533B3E7D60F1DE66C3AC12DA795B46762AB8C4A1911B69B94FFCD88FB4499938150405DCB116F8.35D290F5B8D2677AEE5E8BAB4DB133206D417F99A26B14EAB8D0A5379DCD3632F40037388C9D2CA3001E0D6A8B74837549970EEEAEC3420CE38E2236DE1A8565
+# 设置认证用户以及上面生成的password_pbkdf2认证密钥 (WeiyiGeek)
 tee -a /etc/grub.d/00_header <<'END'
 cat <<'EOF'
 # GRUB Authentication
@@ -590,7 +591,7 @@ fi
 }
 
 
-## 名称: os::optimizationn
+## 名称: os::Optimizationn 
 ## 用途: 操作系统优化设置(内核参数)
 ## 参数: 无
 os::Optimizationn () {
@@ -652,7 +653,7 @@ reboot
 
 
 ## 名称: os::Swap
-## 用途: Liunx 系统创建SWAP交换分区(默认2G)
+## 用途: Liunx 系统创建SWAP交换分区(默认2G) - 请按需调用执行
 ## 参数: $1(几G)
 os::Swap () {
   if [ -e $1 ];then
@@ -699,10 +700,10 @@ EOF
 
 
 ## 名称: disk::Lvsmanager
-## 用途: CentOS7 操作系统磁盘 LVS 逻辑卷添加与配置(扩容流程)
+## 用途: CentOS7 操作系统磁盘 LVS 逻辑卷添加与配置(扩容流程) - 请按需调用执行
 ## 参数: 无
 disk::lvsmanager () {
-  echo "\n分区信息:"
+  echo -e "\n 分区信息:"
   sudo df -Th
   sudo lsblk
   echo -e "\n 磁盘信息："
@@ -714,7 +715,7 @@ disk::lvsmanager () {
   echo -e "\n lvscan逻辑卷扫描:"
   sudo lvscan
   echo -e "\n 分区扩展"
-  echo "CentOS \n lvextend -L +24G /dev/centos/root"
+  echo -e "CentOS \n lvextend -L +24G /dev/centos/root"
   echo "lsblk"
   echo -e "Centos \n # xfs_growfs /dev/mapper/centos-root"
 }
@@ -723,7 +724,9 @@ disk::lvsmanager () {
 
 # 安全加固过程临时文件清理为基线镜像做准备
 unalias rm
+# 删除家目录回收站中的文件目录
 find ~/.trash/* -delete
+# 删除其他用户目录中的回收站中的文件目录
 find /home/ -type d -name .trash -exec find {} -delete \;
 find /var/log -name "*.gz" -delete
 find /var/log -name "*log.*" -delete
