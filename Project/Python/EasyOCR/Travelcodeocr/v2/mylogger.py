@@ -38,9 +38,9 @@ class logger:
 
     # 添加设置的句柄
     self.info_logger.addHandler(TimeFileHandlerINFO)
+    # self.info_logger.addHandler(LoggerStream)
     self.error_logger.addHandler(TimeFileHandlerERROR)
-    self.info_logger.addHandler(LoggerStream)
-    self.error_logger.addHandler(LoggerStream)
+    # self.error_logger.addHandler(LoggerStream)
 
   def debug(self, msg, *args, **kwargs):
     self.info_logger.debug(msg, *args, **kwargs)

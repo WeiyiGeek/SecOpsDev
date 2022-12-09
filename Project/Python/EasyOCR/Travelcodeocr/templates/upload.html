@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>健康码/行程码图片上传识别工具</title>
+</head>
+<body style="text-align: center;">
+  <h3>健康码/行程码图片上传识别</h3>
+  <form action="/api/v1/ocr/health/upload" method="post" enctype="multipart/form-data">
+    识别类型: <input type="radio" name="action" value="xcm">行程码 <input type="radio" name="action" value="jkm">健康码<br><br/>
+    图片上传: <input type="file" name="file" /><br/><br/>
+    <input type="submit" value="点击上传" />
+</form>
+</body>
+</html>

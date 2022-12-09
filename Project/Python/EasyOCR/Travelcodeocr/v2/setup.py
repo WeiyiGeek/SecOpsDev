@@ -5,9 +5,9 @@
 # Time: 2022年5月25日 17点31分
 # Blog: https://www.weiyigeek.top
 # Email: master@weiyigeek.top
-# Modity: 2022年12月9日 10点53分
+# Modity: 2022年8月10日 14点53分
 # ====================================================================
-# 环境依赖与模块安装, 建议 Python 3.8.x 的环境下进行或者参Dockerfile进行镜像构建
+# 环境依赖与模块安装, 建议 Python 3.8.x 的环境下进行
 # pip install flask
 # pip install easyocr
 # pip install gevent
@@ -19,6 +19,7 @@
 # 3、黄卡：海外国家和地区。
 # 4、绿卡：其他地区。行程卡结果包含在前14天内到访的国家（地区）与停留4小时以上的国内城市。色卡仅对到访地作提醒，不关联健康状况。
 # #####################################################################
+
 import os
 import cv2
 import re
@@ -28,10 +29,10 @@ import easyocr
 import logging
 import collections
 import argparse
-import numpy as np
 from flask import Flask, jsonify, request,render_template
 from datetime import datetime
 from werkzeug.utils import secure_filename
+import numpy as np
 from gevent import pywsgi
 from mylogger import logger
 from logging.handlers import RotatingFileHandler
@@ -40,10 +41,9 @@ from geventwebsocket.handler import WebSocketHandler
 app = Flask(__name__)
 
 # 运行参数
-parser = argparse.ArgumentParser(description="本程序利用 easyocr 进行图像文字识别，实现行程码与健康码的识别, 本项目为开源欢迎各位大佬提供更好的方法.",prog='setup.py',epilog="Author: WeiyiGeek, Blog: www.weiyigeek.top")
+parser = argparse.ArgumentParser(description="本程序利用easyocr进行图像文字识别，实现行程码与健康码的识别",prog='Easyocr')
 parser.add_argument('--rundir',dest="rundir", type=str, help="指定程序运行目录", required=False, default="./")
 parser.add_argument('--imgdir',dest="imgdir", type=str, help="指定图像存放目录", required=False, default="./img")
-parser.add_argument('--logdir',dest="logdir", type=str, help="指定程序日志存放目录", required=False, default="./log")
 parser.add_argument('--gpu',dest="gpu", type=bool, help="指定是否使用GPU执行计算(缺省: Flase)", required=False, default=False)
 parser.add_argument('--ip',dest="ip", type=str, help="指定服务监听网卡(缺省: 0.0.0.0)", required=False, default="0.0.0.0")
 parser.add_argument('--port',dest="port", type=int, help="指定服务的端口(缺省: 8000)", required=False, default=8000)
@@ -52,8 +52,6 @@ args = parser.parse_args()
 # 常量定义
 RUNDIR = args.rundir
 IMGDIR = args.imgdir
-IMGCV2 = None
-text = None
 codeDict = {"green": "绿码", "yellow": "黄码", "red": "红码", "other": "暂时无法确认"}
 colorDict = {"red": "红色", "red1": "红色", "orange": "橙色", "yellow": "黄色", "green": "绿色"}
 
@@ -173,7 +171,6 @@ def getHealthCodeInfo(filename, img_np):
   return result_dic
   
 
-
 def travel_filter(file_path,img_np,text_str):
   """
   函数说明: ocr识别的行程码
@@ -182,7 +179,7 @@ def travel_filter(file_path,img_np,text_str):
   """
   # 健康码字段
   try:
-    re_healthcode = re.compile('请收下(.{,2})行程')
+    re_healthcode = re.compile('请收下(.{,2})行程卡')
     healthcode = re_healthcode.findall(text_str)[0]
   except Exception as _:
     healthcode = getTravelcodeColor(img_np)  # 文字无法识别时采用图片颜色识别
@@ -197,12 +194,11 @@ def travel_filter(file_path,img_np,text_str):
   data_str = re_data.findall(text_str)[0]
 
   # 时间字段
-  # re_time = re.compile('[0-9][0-9]:[0-9][0-9]:[0-9][0-9]')
-  # time_str = re_time.findall(text_str)[0]
-  time_str = "null"
+  re_time = re.compile('[0-9][0-9]:[0-9][0-9]:[0-9][0-9]')
+  time_str = re_time.findall(text_str)[0]
 
   # 地区城市字段
-  citys_re = re.compile('到达或途经:(.+)结果')
+  citys_re = re.compile('到达或途经:(.+)结果包含')
   citys_str = citys_re.findall(text_str)[0].strip().split('(')[0]
 
   result_dic = {"code": 200,"msg" : "成功获取行程码数据.", "data" :{"file": file_path ,"type": healthcode, "phone": phone_str, "date": data_str, "time": time_str, "travel": citys_str}}
@@ -218,9 +214,9 @@ def getTravelCodeInfo(filename, img_np):
   # 灰度处理
   img_gray = cv2.cvtColor(img_np, cv2.COLOR_BGR2GRAY)
   # 阈值二进制 - > 127 设置为255(白)，否则0(黑) -> 淡白得更白,淡黑更黑
-  _,img_thresh = cv2.threshold(img_gray, 170, 255, cv2.THRESH_BINARY)
+  _,img_thresh = cv2.threshold(img_gray,176,255,cv2.THRESH_BINARY)
   # 图像 OCR 识别
-  text = reader.readtext(img_thresh, detail=0, batch_size=1,paragraph=True)
+  text = reader.readtext(img_thresh, detail=0, batch_size=64)
   result_dic = travel_filter(filename, img_np, "".join(text))
   return result_dic
 
@@ -228,74 +224,54 @@ def getTravelCodeInfo(filename, img_np):
 @app.route('/')
 @app.route('/index')
 def Index():
- return render_template('index.html')
-   
+  return "<h4 style='text-algin:center'>https://www.weiyigeek.top</h4><script>window.location.href='https://www.weiyigeek.top'</script> <br/><h4 style='text-algin:center'>/api/v1/ocr/health?action=jkm&file=20220520/test.png <br> /api/v1/ocr/health?action=xcm&file=20220520/test.png </h4>"
 
-# 路由: /api/v1/ocr/health
-# 功能: 健康码与行程码图片识别的API接口
+# Flask 路由
 @app.route('/api/v1/ocr/health',methods=["GET"])
 def Travelcodeocr():
   """
   请求路径: /api/v1/ocr/health
-  请求参数: (/api/v1/ocr/health?action=['jkm','xcm']&file=20220520/test.png)
+  请求参数: (/api/v1/ocr/health?action=['jkm','xcm']&file=20220520/test.png, /tools/ocr?dir=20220520)
   """
   action = request.args.get("action")
   filename = request.args.get("file")
+  dirname = request.args.get("dir")
   if (action and filename):
     img_path = os.path.join(IMGDIR, filename)
     if (os.path.exists(img_path)):
-      log.info("["+datetime.now().strftime('%Y-%m-%d %H:%M:%S') + "] Type: " + action + " ,Path: "+ img_path)
-      IMGCV2 = cv2.imread(img_path)
+      # 打印路径
+      log.info("图像路径: "+ img_path)
+      img_np = cv2.imread(img_path)
       try:
         if (action == "jkm"):
-          result_dic_succ = getHealthCodeInfo(filename,IMGCV2)
+          result_dic_succ = getHealthCodeInfo(filename,img_np)
         else:
-          result_dic_succ = getTravelCodeInfo(filename,IMGCV2)
+          result_dic_succ = getTravelCodeInfo(filename,img_np)
       except Exception as err:
         result_dic_err = {"code": 0,"msg" : "图像数据获取异常, 请调用第三方接口识别.","data" :{"action": action,"file": filename ,"type": "未知"}}  
-        log.error(str(result_dic_err))
+        log.error(str(err) + "-" + str(result_dic_err))
         return json.dumps(result_dic_err, ensure_ascii=False).encode('utf-8'), 200, {"Content-Type":"application/json"} 
-      
-      log.info("["+datetime.now().strftime('%Y-%m-%d %H:%M:%S')+"] "+str(result_dic_succ))
+
+      log.info(result_dic_succ)
       return json.dumps(result_dic_succ, ensure_ascii=False).encode('utf-8'), 200, {"Content-Type":"application/json"}
     else:
-      result_dic_err={"code": 0,"msg": "图像数据获取异常, 文件" + filename + "或者路径不对, 请检查."}
+      result_dic_err={"code": 0,"msg": "图像数据获取异常, 文件"+filename+"或者路径不对, 请检查."}
       log.error(str(result_dic_err))
       return json.dumps(result_dic_err, ensure_ascii=False).encode('utf-8'), 200, {"Content-Type":"application/json"}
-  else:
-    return jsonify({"code": "0","msg": "请求参数有误!"})
 
-
-# 路由: /api/v1/ocr/health/dir
-# 功能: 批量进行健康码与行程码图片识别的API接口
-@app.route('/api/v1/ocr/health/dir',methods=["GET","POST"])
-def TravelcodeMultipleocr():
-  """
-  请求路径: /api/v1/ocr/health/dir
-  请求参数: /api/v1/ocr/health/dir?action=['jkm','xcm']&dir=20220520
-  """
-  action = request.args.get("action")
-  dirname = request.args.get("dir")
-  if (action and dirname and os.path.join(IMGDIR, dirname)):
+  elif (action and dirname and os.path.join(IMGDIR, dirname)):
     result_dic_all = []
     result_dic_err = []
     img_path_all =  glob.iglob(os.path.join(os.path.join(IMGDIR,dirname)+"/*.[p|j]*g"))   # 正则匹配 png|jpg|jpeg 后缀的后缀,返回的是迭代器。
     for img_path in img_path_all:
-      IMGCV2 = cv2.imread(img_path)
+      img_np = cv2.imread(img_path)
       try:
-        if (action == "jkm"):
-          result_dic_succ = getHealthCodeInfo(os.path.join(dirname,os.path.basename(img_path)),IMGCV2)
-        elif (action == "xcm"):
-          result_dic_succ = getTravelCodeInfo(os.path.join(dirname,os.path.basename(img_path)),IMGCV2)
-        else:
-          log.error("\033[31m 参数有误 -->> " + str(err) + "\033[0m") # 输出错误提示
-          break
+        result_dic_succ = getTravelCodeInfo(os.path.join(dirname,os.path.basename(img_path)),img_np)
       except Exception as err:
-        log.error("\033[31m" + img_path + " -->> " + str(err) + "\033[0m") # 输出识别错误的图像
+        print("\033[31m"+ img_path + " -->> " + str(err) + "\033[0m") # 输出识别错误的图像
         result_dic_err.append(img_path)
         continue
-      
-      log.info(str(result_dic_succ))
+
       # 成功则加入到List列表中
       result_dic_all.append(result_dic_succ)
 
@@ -308,18 +284,15 @@ def TravelcodeMultipleocr():
       error.write(res_err_json)
 
     return res_succ_json.encode('utf-8'), 200, {"Content-Type":"application/json"}
-
   else:
     return jsonify({"code": "0","msg": "请求参数有误!"})
 
 
-# 路由: /api/v1/ocr/health/upload
-# 功能: 进行健康码与行程码图片上传识别的API接口
-@app.route('/api/v1/ocr/health/upload',methods=["GET","POST"])
+# Flask 路由 - /tools/upload/ocr
+@app.route('/tools/upload/ocr',methods=["GET","POST"])
 def TravelcodeUploadocr():
   if request.method == 'POST':
     unix = datetime.now().strftime('%Y%m%d-%H%M%S%f')
-    action = request.form["action"]
     f = request.files['file']
     if (f.mimetype == 'image/jpeg' or f.mimetype == 'image/png'):
       filedate = unix.split("-")[0]
@@ -329,20 +302,16 @@ def TravelcodeUploadocr():
       # 判断上传文件目录是否存在
       if (not os.path.exists(uploadDir)):
         os.makedirs(uploadDir)
-
       # 图片路径拼接与写入图片
       img_path = os.path.join(uploadDir,secure_filename(unix+"."+filesuffix)) 
       f.save(img_path) 
-      log.info("识别类型: " + action  +  ", 图片路径:" + img_path)
+      # log.info("上传路径:" + img_path)
 
       # 判断上传文件是否存在
       if (os.path.exists(img_path)):
-        IMGCV2 = cv2.imread(img_path)
+        img_np = cv2.imread(img_path)
         try:
-          if (action == "jkm"):
-            result_dic_succ = getHealthCodeInfo(os.path.join(filedate,os.path.basename(img_path)),IMGCV2)
-          else:
-            result_dic_succ = getTravelCodeInfo(os.path.join(filedate,os.path.basename(img_path)),IMGCV2)
+          result_dic_succ = getTravelCodeInfo(os.path.join(filedate,os.path.basename(img_path)),img_np)
         except Exception as err:
           result_dic_err = {"code": 0,"msg" : "图像数据获取异常, 请调用第三方接口识别.","data" :{"action": "upload","img_path": img_path ,"type": "未知"}}  
           log.error(str(err) + "-" + str(result_dic_err))
@@ -357,16 +326,16 @@ def TravelcodeUploadocr():
     else:
       return jsonify({"status": "err","msg": "不能上传除 jpg 与 png 格式以外的图片"})
   else:
-    return render_template('upload.html')
+    return render_template('index.html')
 
 
 # 程序入口
 if __name__ == '__main__':
-  log = logger("app",args.logdir)
+  log = logger("app")
   # 全局设置日志的记录等级，调试INFO级
   logging.basicConfig(level=logging.INFO) 
   # 创建日志记录器，指明日志保存的路径、每个日志文件的最大大小、保存的日志文件个数上限 (100 兆)
-  file_log_handler = RotatingFileHandler(args.logdir+"/console.log", maxBytes=1024 * 1024 * 100, backupCount=10, encoding="utf-8")
+  file_log_handler = RotatingFileHandler("log/console.log", maxBytes=1024 * 1024 * 100, backupCount=10, encoding="utf-8")
   # 创建日志记录的格式 日志等级 输入日志信息的文件名 行数 日志信息
   formatter = logging.Formatter('%(levelname)s - %(message)s')
   # 为刚创建的日志记录器设置日志记录格式

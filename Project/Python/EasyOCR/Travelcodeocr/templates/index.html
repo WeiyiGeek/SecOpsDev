@@ -4,14 +4,17 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>上传行程码图片文字识别颜色</title>
+  <title>健康码/行程码OCR识别接口</title>
 </head>
-<body>
-  <h3>行程码图片上传识别-demo</h3>
-  <form action="/tools/upload/ocr" method="post" enctype="multipart/form-data">
-    <input type="text" name="flag" value="https://www.weiyigeek.top" size="32"> <br/><br/>
-    <input type="file" name="file" /><br /><br/>
-    <input type="submit" value="upload" />
-</form>
+<body style='text-align:center'>
+  <h4>健康码行程码识别接口</h4>
+  <p>作者站点: <a href="https://www.weiyigeek.top" target="_blank" rel="noopener noreferrer">https://www.weiyigeek.top</a> <a>
+  <p>作者博客: <a href="https://blog.weiyigeek.top" target="_blank" rel="noopener noreferrer">https://blog.weiyigeek.top</a> <a>
+  <div>
+    <p><a href="/api/v1/ocr/health?action=jkm&file=20220520/test.png" target="_blank" rel="noopener noreferrer">健康码识别示例</a></p>
+    <p><a href="/api/v1/ocr/health?action=xcm&file=20220520/test.png" target="_blank" rel="noopener noreferrer">行程卡识别示例</a></p>
+    <p><a href="/api/v1/ocr/health/upload" target="_blank" rel="noopener noreferrer">健康码/行程卡上传识别</a></p>
+    <p><a href="/api/v1/ocr/health/dir?action=['xcm','jkm']&dir=20220520" target="_blank" rel="noopener noreferrer">已上传健康码/行程卡目录批量识别</a></p>
+  </div>
 </body>
 </html>

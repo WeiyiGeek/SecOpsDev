@@ -1,0 +1,96 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: healthcode
+  namespace: devtest
+  labels:
+    app: healthcode
+    use: gpu
+spec:
+  type: NodePort
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+      protocol: TCP
+      nodePort: 30001
+  selector:
+    app: healthcode
+    use: gpu
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: healthcode-0
+  namespace: devtest
+  labels:
+    app: healthcode
+spec:
+  replicas: 6
+  selector:
+    matchLabels:
+      app: healthcode
+      use: gpu
+  serviceName: "healthcode"
+  template:
+    metadata:
+      labels:
+        app: healthcode
+        use: gpu
+    spec:
+      volumes:
+      - name: workdir
+        emptyDir: {}
+      - name: workspace
+        hostPath:
+          path: /storage/webapp/project/MultiTravelcodeocr
+          type: DirectoryOrCreate
+      - name: model
+        hostPath:
+          path: /storage/webapp/project/.EasyOCR
+          type: DirectoryOrCreate
+      - name: img
+        hostPath:
+          path: /storage/webapp/project/upfile
+          type: DirectoryOrCreate
+      initContainers:
+      - name: init
+        image: busybox:1.35.0
+        imagePullPolicy: IfNotPresent
+        command:  # 设置 Pod 使用的 GPU 显卡序号
+        - /bin/sh
+        - -c
+        - "echo export CUDA_VISIBLE_DEVICES=${GPU_DEVICES##*-}> /app/${GPU_DEVICES}"
+        env:
+        - name: GPU_DEVICES
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: CUDA_VISIBLE_DEVICES
+          value: ${GPU_DEVICES##*-}
+        volumeMounts:
+        - name: workdir
+          mountPath: /app/
+      containers:
+        - name: app
+          image: harbor.weiyigeek.top/python/easyocr-healthcode:v1.6.2
+          command: ['/bin/bash', '-c','source /app/${HOSTNAME}; echo ${CUDA_VISIBLE_DEVICES}; python ./setup.py --imgdir=/imgs --logdir=
+/logs --gpu=True']
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits: {}
+            #  cpu: "8"
+            #  memory: 8Gi
+          volumeMounts:
+            - name: workdir
+              mountPath: /app/
+            - name: workspace
+              mountPath: /workspace
+            - name: model
+              mountPath: /root/.EasyOCR
+            - name: img
+              mountPath: /imgs
+          ports:
+            - name: http
+              protocol: TCP
+              containerPort: 8000
