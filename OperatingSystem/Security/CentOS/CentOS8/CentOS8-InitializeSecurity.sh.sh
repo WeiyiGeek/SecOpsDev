@@ -1,5 +1,5 @@
 #!/bin/bash
-# @Desc:Centos7安装后初始化脚本
+# @Desc:Centos8安装后初始化脚本
 # @Author: WeiyiGeek
 # @Time: 2020年5月6日 11:04:42
 # @Version: 1.0

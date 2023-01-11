@@ -1,2 +1,3 @@
 #ignore git file
 .*.sh
+update.sh

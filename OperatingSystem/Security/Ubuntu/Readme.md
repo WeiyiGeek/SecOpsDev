@@ -10,7 +10,7 @@
 
 学习交流群：https://weiyigeek.top/visit.html
 
-Github项目: [https://github.com/WeiyiGeek/SecOpsDev/tree/master/OperatingSystem/Security/Ubunt](https://github.com/WeiyiGeek/SecOpsDev/tree/master/OperatingSystem/Security/Ubuntu)
+Github项目: [https://github.com/WeiyiGeek/SecOpsDev/tree/master/OperatingSystem/Security/Ubuntu](https://github.com/WeiyiGeek/SecOpsDev/tree/master/OperatingSystem/Security/Ubuntu)
 
 
 

@@ -1,26 +1,32 @@
 #!/bin/bash
-## @Title:网站首页监控预与监控检测
-## @Author:WeiyiGeek 
-## @CreateTime:2020年5月26日 13点34分
-## @Version: 1.2
-
-# cat > /tmp/target.txt <<'EOF'
-# http://www.weiyigeek.top
-# EOF
-
-
-## [调试执行失败时候自动停止脚本]
+## @Title: 使用phantomjs针对网站首页监控预与监控检测并进行企业微信预警
+## @Author: WeiyiGeek 
+## @CreateTime: 2023年1月11日 15点34分
+## @Blog: https://blog.weiyigeek.top
+## @Version: 1.3
 # set -e
-#export WXMSGURL="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=4e1165c3-55c1-4bc4-8493-ecc5ccda9278"
-export WXMSGURL="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=8239f334-5ae1-4bcc-b183-b505662315e1"
-export NETTYPE="内网"
+
+# 监控目标站点配置文件
+MONITORSITE=/tmp/target.txt
+cat > ${MONITORSITE} <<'EOF'
+https://www.baidu.com
+EOF
+# https://www.weiyigeek.top
+# https://blog.weiyigeek.top
+
+# 全局变量
+export WXMSGURL="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=51648169-7638-43a4-97d6-dfd39b48ea23"
+export NETTYPE="外网访问"
 export HCMSG=""
 export XKMSG=""
 export ZHCXMSG=""
 
-## [初始化依赖检测脚本]
-function InitDepend(){
-  # phantomjs缩略图生成
+
+################################
+# 名称: DependencyCheck
+# 说明: 脚本运行依赖检测
+################################
+function DependencyCheck(){
   phantomjs -v > /dev/null 2>&1
   if [[ "$?" != "0" ]];then echo -e "\e[31m[Error] Phantomjs NotFound,Please Install this! \e[0m";exit 0;fi
   jq --version > /dev/null 2>&1
@@ -28,7 +34,10 @@ function InitDepend(){
 }
 
 
-## [企业微信消息机器人消息发送]
+################################
+# 名称: SendWXMsg
+# 说明: 企业微信消息机器人消息发送
+################################
 function SendWXMsg(){
   if [[ "$1" == "text" ]];then
     #text 格式
@@ -61,55 +70,64 @@ function SendWXMsg(){
   fi
 }
 
-# [目标站点首页的MD5值生成]
+
+################################
+# 名称: TargetMD5
+# 说明: 目标站点首页的MD5值生成
+################################
 function TargetMD5(){
   # 判断文件是否存在
-  if [[ ! -d $TARGETDIR ]];then mkdir -p $TARGETDIR;fi 
+  if [[ ! -d "${TARGETDIR}" ]];then echo "Create directory ${TARGETDIR}.....";mkdir -p $TARGETDIR; fi 
   if [[ ! -f "${TARGETFILE}" ]]; then curl -m 15 ${TARGETURL} -o ${TARGETFILE}; fi
   export TARGETFILEMD5=$(md5sum ${TARGETFILE} | awk -F ' ' '{print $1}')
 }
 
-## [网站首页指纹比对]
+
+################################
+# 名称: Record
+# 说明: 网站首页指纹(md5值)比对以及网页截图
+################################
 function Record(){ 
    curl -m 20 ${TARGETURL} -o ${RECORDFILE}
    export RECORDFILEMD5="$(md5sum $_ | awk -F '  ' '{print $1}')"  
    if [[ "${TARGETFILEMD5}MD5" != "${RECORDFILEMD5}MD5" ]]; then
-      #异常信息记录
+      # 异常信息记录
       echo "${RECORDFILE}-${RECORDFILEMD5}" >> ${TARGETDIR}exception.log
 
-      #差异比对
-      DIFFTEXT=$(diff --normal $TARGETFILE ${RECORDFILE} | egrep "^[0-9]" | tr '\n' '__' )
-      if [[ "$(echo ${TARGETURL} | grep -c "site")" == "1" ]];then
-        phantomjs "/usr/local/src/phantomjs/examples/rasterize.js" "http://www.weiyigeek.top/site/index.html"  ${RECORDFILE}.png
-      else
-        phantomjs "/usr/local/src/phantomjs/examples/rasterize.js" ${TARGETURL} ${RECORDFILE}.png
-      fi
+      # 差异比对
+      DIFFTEXT=$(diff --normal ${TARGETFILE} ${RECORDFILE} | egrep "^[0-9]" | tr '\n' '__' )
+
+      # 使用 phantomjs 生成截图，注意此处 /usr/local/src/phantomjs/custom/screen-capture.js 路径
+      /usr/local/bin/phantomjs //usr/local/src/phantomjs/custom/screen-capture.js ${TARGETURL} ${RECORDFILE}.png
       IMGMD5="$(md5sum ${RECORDFILE}.png| awk -F '  ' '{print $1}')"
       IMGBASE64="$(base64 -w 0 < ${RECORDFILE}.png)"
 
-      #信息发送
+      # 信息发送
       SendWXMsg "text" "2" "网站修改提醒" "被修改的行数:\n${DIFFTEXT}" "${RECORDFILEMD5}"
 
       sleep 1
 
-      #网页截图发送(外网发送)
+      # 网页截图发送 (外网发送)
       SendWXMsg "image" "${IMGBASE64}" "${IMGMD5}" 
       cp -f ${RECORDFILE} ${TARGETFILE}
 
-      #发送警告的次数
-      # RCOUNT=RCOUNT${FLAG}
-      # let ${RCOUNT}+=1
-      # export ${RCOUNT}=${!RCOUNT}
-      # if [[ ${!RCOUNT} -eq 1 ]];then
-      #   cp -f ${RECORDFILE} ${TARGETFILE}
-      #   export ${RCOUNT}=0
-      # fi
+      # 发送警告次数
+      RCOUNT=RCOUNT${FLAG}
+      let ${RCOUNT}+=1
+      export ${RCOUNT}=${!RCOUNT}
+      if [[ ${!RCOUNT} -eq 1 ]];then
+        cp -f ${RECORDFILE} ${TARGETFILE}
+        export ${RCOUNT}=0
+      fi
   fi 
 }
 
 
-# [网站访问异常检测]
-function Monitor (){
+################################
+# 名称: SiteMonitorCheck
+# 说明: 网站访问异常检测
+################################
+function SiteMonitorCheck (){
     STATUS=$(curl -I -m 10 -s -o /dev/null -w "%{http_code}" ${TARGETURL} )
     if [[ $? -ne 0 ]];then STATUS="CLOSE";fi
     # 当系统故障关闭后只推送三次，然后恢复正常时候又重新计数
@@ -137,8 +155,10 @@ function Monitor (){
 }
 
 
-
-## [健康检查]
+################################
+# 名称: HealthCheck
+# 说明: 网页站点外网访问检测
+################################
 function HealthCheck(){
   if [[ "$NETTYPE" == "外网" ]];then
     local CHECK=$(curl -m 15 -o /dev/null -s -w "DNS解析耗时: "%{time_namelookup}"s_重定向耗时: "%{time_redirect}"s_TCP连接耗时: "%{time_connect}"s_请求准备耗时: "%{time_pretransfer}"s_应用连接耗时: "%{time_appconnect}"s_传输耗时: "%{time_starttransfer}"s_下载速度: "%{speed_download}"byte/s_整体请求响应耗时: "%{time_total}"s" "${TARGETURL}")
@@ -152,14 +172,17 @@ function HealthCheck(){
     if [[ $? -ne 0 || "$CHECK" != "200" ]];then
       export HCMSG="${HCMSG}__> 巡检地址: ${TARGETURL}_巡检信息: 异常"
     else
-      #export HCMSG="${HCMSG}__> 巡检地址: ${TARGETURL}_巡检信息: 正常"
+      # export HCMSG="${HCMSG}__> 巡检地址: ${TARGETURL}_巡检信息: 正常"
       echo .
     fi
   fi
 }
 
 
-## [指定应用监控埋点]
+################################
+# 名称: XKservice
+# 说明: 指定应用监控埋点
+################################
 function XKservice(){
   if [[ "$NETTYPE" == "外网" ]];then
     local CHECK=$(echo $TARGETURL | egrep -c "xk")
@@ -178,40 +201,54 @@ function XKservice(){
   fi
 }
 
-## [综合应用监控埋点]
-function ZhcxService(){
+################################
+# 名称: InnerAppServices
+# 说明: 内部应用服务监控埋点
+################################
+function InnerAppServices(){
   if [[ "$(echo $TARGETURL| egrep -c '40081|30081')" == "1" ]];then
-    curl -m 15 -s "${TARGETURL}/user/getVersion.htmls" -o zhcx.json
-    STATUS=$(jq -M '"_Status:"+(.db|tostring)+"_Version:"+(.version|tostring)' zhcx.json | tr -d '"')
+    curl -m 15 -s "${TARGETURL}/user/getVersion.htmls" -o innerApp.json
+    STATUS=$(jq -M '"_Status:"+(.db|tostring)+"_Version:"+(.version|tostring)' innerApp.json | tr -d '"')
     export ZHCXMSG="${ZHCXMSG}__> 应用地址:${TARGETURL}_${STATUS}"
   fi
 }
 
 
-## 程序入口
+################################
+# 名称: main
+# 说明: 脚本主执行入口
+# 参数: 无
+# 返回值: 无
+################################
 function main(){
-  InitDepend
-  for i in $(cat /tmp/target.txt);do
+  # 依赖检测
+  DependencyCheck
+
+  # 目标监控
+  for i in $(cat ${MONITORSITE});do
     CHECK=$(echo $i | egrep -c "^#")
     if [[ "$CHECK" == "1" ]];then continue;fi
     export TARGETURL=$i
     export URL=$(echo $i|cut -f 3 -d '/')
-    export TARGETDIR="/var/log/WebMonitor/${URL}/"
+    export TARGETDIR="/var/log/WebScreenCapture/${URL}/"
     export TARGETFILE="${TARGETDIR}index.html"
     export RECORDFILE="${TARGETDIR}$(date +%Y%m%d%H%M%S)-index.html"
+
+    # 目标MD5值
     TargetMD5
+
     if [[ "$1" == "H"  ]];then
       HealthCheck
       XKservice
-      ZhcxService
+      InnerAppServices
     else
       let FLAG+=1
       export FLAG=${FLAG}
-      Monitor
+      SiteMonitorCheck
     fi
   done
 
-  # [指定应用执行完毕后发送]
+  # 指定应用执行完毕后
   if [[ "$1"  == "H" && "$NETTYPE" == "内网" ]];then
     if [[ "${#HCMSG}" != "0" ]];then 
       SendWXMsg "markdown" "1" "${NETTYPE}-业务应用运行情况巡查" "${HCMSG}_检测时间:$(date +%Y-%m-%d~%H:%M:%S)"

@@ -6,7 +6,7 @@
 # @E-mail: master@weiyigeek.top
 # @Blog: https://www.weiyigeek.top
 # @wechat: WeiyiGeeker
-# @Github: https://github.com/WeiyiGeek/SecOpsDev/tree/master/OS-操作系统/Windows/
+# @Github: https://github.com/WeiyiGeek/SecOpsDev/tree/master/OperatingSystem/Security/Windows
 # @Version: 1.8
 # @Runtime: Server 2019 / Windows 10
 #######################################################
