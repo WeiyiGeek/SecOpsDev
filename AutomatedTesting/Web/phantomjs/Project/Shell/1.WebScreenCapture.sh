@@ -9,17 +9,20 @@
 # 监控目标站点配置文件
 MONITORSITE=/tmp/target.txt
 cat > ${MONITORSITE} <<'EOF'
-https://www.baidu.com
+https://www.weiyigeek.top
+https://blog.weiyigeek.top
 EOF
-# https://www.weiyigeek.top
-# https://blog.weiyigeek.top
+
 
 # 全局变量
+# 请将此处修改为你企业微信机器人webhook地址
 export WXMSGURL="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=51648169-7638-43a4-97d6-dfd39b48ea23"
 export NETTYPE="外网访问"
 export HCMSG=""
 export XKMSG=""
 export ZHCXMSG=""
+# 安装使用phantomjs时报 ` libproviders.so: cannot open shared object file:` 错误时需要取消如下注释。
+# export OPENSSL_CONF=/dev/null
 
 
 ################################
@@ -69,7 +72,6 @@ function SendWXMsg(){
     sleep
   fi
 }
-
 
 ################################
 # 名称: TargetMD5
