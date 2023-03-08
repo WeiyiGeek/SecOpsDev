@@ -7,11 +7,11 @@
 ###########################################################################
 $AuthorSite = "https://www.weiyigeek.top"
 $Flag = 0
-$Last_db_name = ""
-$Last_record_file = "./upfile.txt"
+$Last_db_name = ""                    # 获取最后上传的备份文件名称
+$Last_record_file = "./upfile.txt"    # 记录FTP上传成功的备份文件
 $LocationBackupDir = "F:\weiyigeek\"  # 本地备份文件存放的目录
 $Current_db_name = (get-childitem $LocationBackupDir | sort CreationTime -Descending |  Select-Object -First 1).name
-$FTPConnect = "open 192.168.1.12 21"
+$FTPConnect = "open 192.168.1.12 21"  # FTP服务器IP及其端口
 $FTPUser = "VwBlAGkAeQBpAEcAZQBlAGsA" # base64 编码
 $FTPPass = "UABhAHMAcwB3AG8AcgBkAA==" # base64 编码
 $FTPRemoteDir = "/ftp/weiyigeek.top/" # 存储备份文件的远程目录 
@@ -22,8 +22,8 @@ function Convert($string) {
    return $decoded;
 }
 
-
 if (-not(Test-Path $Last_record_file)) {
+  start $AuthorSite 
   Write-host "[$(Date)] 首次运行备份脚本，正在生成 $Last_record_file 文本文件!" -ForegroundColor Green
   Out-File -FilePath $Last_record_file -InputObject $Current_db_name -Encoding ASCII -Append
   Start-Process -FilePath $AuthorSite

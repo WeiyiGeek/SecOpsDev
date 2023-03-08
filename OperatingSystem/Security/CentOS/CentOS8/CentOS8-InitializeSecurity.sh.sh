@@ -48,4 +48,6 @@ echo -e "\n############################\n#安装常用的运维软件\n#########
 dnf install -y gcc gcc-c++ openssl-devel bzip2-devel
 #常规软件
 dnf install -y nano vim net-tools tree wget dos2unix unzip htop ncdu bash-completion ntpdate
-echo "--[安装安装完成]--"
+echo "--[安装安装完成]--".
+
+

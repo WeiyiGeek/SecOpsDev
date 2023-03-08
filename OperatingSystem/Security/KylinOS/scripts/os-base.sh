@@ -1,13 +1,13 @@
 #!/bin/bash
 #-----------------------------------------------------------------------#
-# System security initiate hardening tool for Ubuntu 22.04 Server.
+# System security initiate hardening tool for KylinOS 10 Server.
 # WeiyiGeek <master@weiyigeek.top>
 # Blog : https://blog.weiyigeek.top
-#
+
 # The latest version of my giuthub can be found at:
 # https://github.com/WeiyiGeek/SecOpsDev/
-# 
-# Copyright (C) 2020-2022 WeiyiGeek
+#
+# Copyright (C) 2020-2023 WeiyiGeek
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -40,7 +40,8 @@ function base_hostname () {
     sudo hostnamectl set-hostname --static ${VAR_HOSTNAME} 
 
     # 3.替换主机hosts文件
-    sed -i "s/127.0.1.1\s.\w.*$/127.0.1.1 ${VAR_HOSTNAME}/g" /etc/hosts
+    sed -i "s/127.0.0.1   /127.0.0.1 ${VAR_HOSTNAME}/g" /etc/hosts
+    sed -i "s/::1       /::1 ${VAR_HOSTNAME}/g" /etc/hosts
     grep -q "^\$(hostname -I)\s.\w.*$" /etc/hosts && sed -i "s/\$(hostname -I)\s.\w.*$/${IP} ${VAR_HOSTNAME}" /etc/hosts || echo "${IP} ${VAR_HOSTNAME}" >> /etc/hosts
   fi
 
@@ -52,103 +53,94 @@ function base_hostname () {
 }
 
 
-# 函数名称: ubuntu_mirror
-# 函数用途: ubuntu 系统主机软件仓库镜像源
+# 函数名称: base_mirror
+# 函数用途: kylinOS 系统主机软件仓库镜像源
 # 函数参数: 无
-function ubuntu_mirror() {
+function base_mirror() {
   log::info "[${COUNT}] Configure os software mirror"
   log::info "[-] 设置主机软件仓库镜像源."
 
   local release
-  cp /etc/apt/sources.list ${BACKUPDIR}
+  cp /etc/yum.repos.d/kylin_x86_64.repo ${BACKUPDIR}
   # 1.根据主机发行版设置
-  release=$(lsb_release -c -s)
-  if [ ${release} == "jammy" ];then
-sudo tee /etc/apt/sources.list <<'EOF'
-# 清华大学 Mirrors - Ubuntu 22.04 jammy
-deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu jammy main restricted
-deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu jammy-updates main restricted
-deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu jammy universe
-deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu jammy-updates universe
-deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu jammy multiverse
-deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu jammy-updates multiverse
-deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu jammy-backports main restricted universe multiverse
-deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu jammy-security main restricted
-deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu jammy-security universe
-deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu jammy-security multiverse
+  # (Tercel) 版本是 麒麟 V10 SP1 版本，
+  # (Sword)  版本是 麒麟 V10 SP2 版本，
+  # (Lance)  版本是 麒麟 V10 SP3 版本，
+  release=$(grep -e "^VERSION=" /etc/os-release | cut -f 2 -d "=" | tr -d '[:punct:][:space:]')
+  if [ ${release} == "V10Lance" ];then
+sudo tee /etc/yum.repos.d/kylin_x86_64.repo <<'EOF'
+### Kylin Linux Advanced Server 10 (SP3) - os repo ###
+[ks10-adv-os]
+name = Kylin Linux Advanced Server 10 - Os
+baseurl = https://update.cs2c.com.cn/NS/V10/V10SP3/os/adv/lic/base/$basearch/
+gpgcheck = 1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-kylin
+enabled = 1
+
+[ks10-adv-updates]
+name = Kylin Linux Advanced Server 10 - Updates
+baseurl = https://update.cs2c.com.cn/NS/V10/V10SP3/os/adv/lic/updates/$basearch/
+gpgcheck = 1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-kylin
+enabled = 1
+
+[ks10-adv-addons]
+name = Kylin Linux Advanced Server 10 - Addons
+baseurl = https://update.cs2c.com.cn/NS/V10/V10SP3/os/adv/lic/addons/$basearch/
+gpgcheck = 1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-kylin
+enabled = 0
 EOF
-  elif [ ${release} == "focal" ];then
-sudo tee /etc/apt/sources.list <<'EOF'
-# 阿里云 Mirrors - Ubuntu 20.04 focal
-deb https://mirrors.aliyun.com/ubuntu/ focal main restricted universe multiverse
-deb-src https://mirrors.aliyun.com/ubuntu/ focal main restricted universe multiverse
-deb https://mirrors.aliyun.com/ubuntu/ focal-security main restricted universe multiverse
-deb-src https://mirrors.aliyun.com/ubuntu/ focal-security main restricted universe multiverse
-deb https://mirrors.aliyun.com/ubuntu/ focal-updates main restricted universe multiverse
-deb-src https://mirrors.aliyun.com/ubuntu/ focal-updates main restricted universe multiverse
-deb https://mirrors.aliyun.com/ubuntu/ focal-proposed main restricted universe multiverse
-deb-src https://mirrors.aliyun.com/ubuntu/ focal-proposed main restricted universe multiverse
-deb https://mirrors.aliyun.com/ubuntu/ focal-backports main restricted universe multiverse
-deb-src https://mirrors.aliyun.com/ubuntu/ focal-backports main restricted universe multiverse
-EOF
-  elif [ ${release} == "bionic" ];then
-sudo tee /etc/apt/sources.list <<'EOF'
-# 阿里云 Mirrors - Ubuntu 18.04 focal
-deb https://mirrors.aliyun.com/ubuntu/ bionic main restricted universe multiverse
-deb https://mirrors.aliyun.com/ubuntu/ bionic-security main restricted universe multiverse
-deb https://mirrors.aliyun.com/ubuntu/ bionic-updates main restricted universe multiverse
-deb https://mirrors.aliyun.com/ubuntu/ bionic-proposed main restricted universe multiverse
-deb https://mirrors.aliyun.com/ubuntu/ bionic-backports main restricted universe multiverse
-deb-src https://mirrors.aliyun.com/ubuntu/ bionic main restricted universe multiverse
-deb-src https://mirrors.aliyun.com/ubuntu/ bionic-security main restricted universe multiverse
-deb-src https://mirrors.aliyun.com/ubuntu/ bionic-updates main restricted universe multiverse
-deb-src https://mirrors.aliyun.com/ubuntu/ bionic-proposed main restricted universe multiverse
-deb-src https://mirrors.aliyun.com/ubuntu/ bionic-backports main restricted universe multiverse
-EOF
+echo "8" > /etc/yum/vars/centos_version
+curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-8.repo
+sed -i 's/$releasever/$centos_version/g' /etc/yum.repos.d/CentOS-Base.repo
+  elif [[ ${release} == "V10Sword" ]];then
+    echo "暂未使用麒麟 V10 Sword SP2 版本，请自行百度搜索,镜像源!"
   fi
-  sudo apt autoclean -y
+  elif [[ ${release} == "V10Tercel" ]];then
+    echo "暂未使用麒麟 V10 Tercel SP1 版本，请自行百度搜索,镜像源!"
+  fi
+  else
+    echo "暂未使用麒麟除 V10 以外的系统版本，请自行百度搜索,镜像源!"
+  fi
+  sudo yum clean all -y && sudo yum makecache
 
   read -t ${VAR_VERIFY_TIMEOUT} -p "Please input, Perform system software update and upgrade. (Y/N) : " VERIFY
   if [[ ${VERIFY:="N"} == "Y" || ${VERIFY:="N"} == "y" ]]; then
-    sudo apt update && sudo apt upgrade -y
+    sudo yum update -y && sudo yum upgrade -y
   fi
 
-# 补充：代理方式进行更新
-# sudo apt autoclean && sudo apt -o Acquire::http::proxy="http://proxy.weiyigeek.top/" update && sudo apt -o Acquire::http::proxy="http://proxy.weiyigeek.top" upgrade -y
-# sudo apt install -o Acquire::http::proxy="http://proxy.weiyigeek.top/" -y nano vim git unzip wget ntpdate dos2unix net-tools tree htop ncdu nload sysstat psmisc bash-completion fail2ban
-  
   log::success "[${COUNT}] This operation is completed!"
   sleep 1
   ((COUNT++))
 }
 
 
-# 函数名称: ubuntu_software
-# 函数用途: ubuntu 系统主机内核版本升级以常规软件安装
+# 函数名称: base_software
+# 函数用途: kylinOS 系统主机内核版本升级以常规软件安装
 # 函数参数: 无
-function ubuntu_software() {
+function base_software() {
   log::info "[${COUNT}] Installation and compilation environment and common software tools."
   
   # 1.系统更新
   log::info "[-] 系统软件源更新."
-  sudo apt update && sudo apt upgrade -y
+  sudo yum update && sudo yum upgrade -y && dnf repolist
 
   # 2.安装系统所需的常规软件
   log::info "[-] 安装系统所需的常规软件."
-  sudo apt install -y gcc g++ make 
-  sudo apt install -y nano vim git unzip wget ntpdate dos2unix net-tools tree htop ncdu nload sysstat psmisc bash-completion fail2ban jq nfs-common rpcbind libpam-cracklib dialog man-db cron ufw iputils-ping
-  
-  # 3.针对 22.04 是否取消最小化软件安装.(不是后续安装部署软件太痛苦了)
-  release=$(lsb_release -c -s)
-  if [ ${release} == "jammy" ];then
-    read -t ${VAR_VERIFY_TIMEOUT} -p "Please input,Do you want to cancel minimizing software installation. (Y/N) : " VERIFY
-    if [[ ${VERIFY:="N"} == "Y" || ${VERIFY:="N"} == "y" ]]; then echo -e "y\n" | unminimize;fi
-  fi
+  sudo dnf install -y gcc make
+  sudo dnf install -y nano vim git unzip wget ntpdate dos2unix net-tools tree htop  sysstat psmisc bash-completion jq rpcbind  dialog nfs-utils
+
+  # 补充：代理方式进行更新
+  # echo "proxy=http://127.0.0.1:8080/" >> /etc/yum.conf
+  # sudo yum clean all -y && sudo yum update -y && sudo yum upgrade -y
+  # sudo yum install -y 软件包
 
   log::success "[${COUNT}] This operation is completed!"
   sleep 1
   ((COUNT++))
 }
+
 
 # 函数名称: base_timezone
 # 函数用途: 主机时间同步校准与时区设置
@@ -156,16 +148,16 @@ function ubuntu_software() {
 function base_timezone() {
   log::info "[${COUNT}] Configure OS Time and TimeZone."
   log::info "[-] 设置前的当前时间: $(date)"
-  sudo cp /usr/share/zoneinfo/${VAR_TIMEZONE} /etc/localtime
+  sudo cp -a /usr/share/zoneinfo/${VAR_TIMEZONE} /etc/localtime
 
   # 1.时区设置
   sudo timedatectl set-timezone ${VAR_TIMEZONE}
   # sudo dpkg-reconfigure tzdata  # 修改确认
   # sudo bash -c "echo 'Asia/Shanghai' > /etc/timezone" # 与上一条命令一样
- 
-  # 2.将当前的 UTC 时间写入硬件时钟 (硬件时间默认为UTC)
 
+  # 2.将当前的 UTC 时间写入硬件时钟 (硬件时间默认为UTC)
   sudo timedatectl set-local-rtc 0
+
   # 3.启用NTP时间同步：
   sudo timedatectl set-ntp yes
 
@@ -195,48 +187,28 @@ function base_timezone() {
 function base_banner() {
   log::info "[${COUNT}] Configure OS Local or Remote Login Banner Tips."
   log::info "[-] 远程SSH登录前后提示警告Banner设置"
+
   # 1.SSH登录前警告Banner提示
-  egrep -q "^\s*(banner|Banner)\s+\W+.*$" /etc/ssh/sshd_config && sed -ri "s/^\s*(banner|Banner)\s+\W+.*$/Banner \/etc\/issue/" /etc/ssh/sshd_config || \
-  echo "Banner /etc/issue" >> /etc/ssh/sshd_config
+  egrep -q "^\s*(banner|Banner)\s+\W+.*$" /etc/ssh/sshd_config && sed -ri "s/^\s*(banner|Banner)\s+\W+.*$/Banner \/etc\/issue.net/" /etc/ssh/sshd_config || \
+  echo "Banner /etc/issue.net" >> /etc/ssh/sshd_config
 sudo tee /etc/issue <<'EOF'
 ************************* [ 安全登陆 (Security Login) ] ************************
-Authorized only. All activity will be monitored and reported.By Security Center.
-Author: WeiyiGeek, Blog: https://www.weiyigeek.top
-
-Welcome to Console Cloud Computer Service!
-
-                   _ooOoo_
-                  o8888888o
-                  88" . "88
-                  (| -_- |)
-                  O\  =  /O
-               ____/`---'\____
-             .'  \\|     |//  `.
-            /  \\|||  :  |||//  \
-           /  _||||| -:- |||||-  \
-           |   | \\\  -  /// |   |
-           | \_|  ''\---/''  |   |
-           \  .-\__  `-`  ___/-. /
-         ___`. .'  /--.--\  `. . __
-      ."" '<  `.___\_<|>_/___.'  >'"".
-     | | :  `- \`.;`\ _ /`;.`/ - ` : | |
-     \  \ `-.   \_ __\ /__ _/   .-` /  /
-======`-.____`-.___\_____/___.-`____.-'======
-                   `=---='
- 
- 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-           佛祖保佑       永不死机
-           心外无法       法外无心
+Authorized users only. All activity will be monitored and reported.By Security Center.
+Author: WeiyiGeek
 
 EOF
-
 sudo tee /etc/issue.net <<'EOF'
 ************************* [ 安全登陆 (Security Login) ] *************************
-Authorized only. All activity will be monitored and reported.By Security Center.
+Authorized users only. All activity will be monitored and reported.By Security Center.
 Author: WeiyiGeek, Blog: https://www.weiyigeek.top
 
-Welcome to Network Cloud Computer Service!
+EOF
+
+  # 2.本地控制台与SSH登录后提示自定义提示信息
+tee /etc/motd <<'EOF'
+
+Welcome to IT Cloud Computer Service!
+If the server is abnormal, please contact WeiyiGeek  (IT-Security-Center)
 
                    _ooOoo_
                   o8888888o
@@ -261,23 +233,10 @@ Welcome to Network Cloud Computer Service!
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
            佛祖保佑       永不死机
            心外无法       法外无心
+
 EOF
 
-  # 2.SSH登录后提示Banner提示
-  # Disable motd-news
-  if [ -f /etc/default/motd-news ];then
-    cp /etc/default/motd-news ${BACKUPDIR}
-    sed -i 's/ENABLED=.*/ENABLED=0/' /etc/default/motd-news
-  else
-    echo 'ENABLED=0' > /etc/default/motd-news
-  fi
-  systemctl stop motd-news.timer
-  systemctl disable motd-news.timer
-  systemctl mask motd-news.timer >/dev/null 2>&1
-
-  # Disable defualt motd
-  chmod -x /etc/update-motd.d/*
-tee /etc/update-motd.d/00-custom-header <<'EOF'
+tee /usr/local/bin/00-custom-header <<'EOF'
 #!/bin/bash
 #-----------------------------------------------------------------------#
 # System security initiate hardening tool for Ubuntu Server.
@@ -302,6 +261,13 @@ tee /etc/update-motd.d/00-custom-header <<'EOF'
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #-------------------------------------------------------------------------#
+# Get last login time
+LAST_LOGIN=$(last -n 2 --time-format iso | sed -n '2p;')
+LAST_LOGIN_T=$(echo ${LAST_LOGIN} | awk '{print $2}')
+LAST_LOGIN_IP=$(echo ${LAST_LOGIN} | awk '{print $3}')
+LAST_LOGIN_TIME=$(echo ${LAST_LOGIN} | awk '{print $4}')
+LAST_LOGOUT_TIME=$(echo ${LAST_LOGIN} | awk '{print $6}')
+
 # Get load averages
 LOAD1=$(grep "" /proc/loadavg | awk '{print $1}')
 LOAD5=$(grep "" /proc/loadavg | awk '{print $2}')
@@ -336,12 +302,16 @@ R="\033[01;31m"
 D="\033[39m\033[2m"
 N="\033[0m"
 
+echo 
 echo -e "\e[01;38;44;5m########################## 安全运维 (Security Operation) ############################\e[0m"
-echo -e "${G}Login success.${N} Please execute the commands and operation data carefully.By WeiyiGeek."
-echo -e "You are logged in to ${G}$(uname -n)${N}, Login time is $(/bin/date "+%Y-%m-%d %H:%M:%S").\n"
+echo -e "[Login Info]\n"
+echo -e "USER: ${G}$(whoami)${N}"
+echo -e "You last logged in to ${G}${LAST_LOGIN_T}${N} of ${G}$(uname -n)${N} system with IP ${G}${LAST_LOGIN_IP}${N}, \nLast Login time is ${G}${LAST_LOGIN_TIME}${N}, Logout time is ${G}${LAST_LOGOUT_TIME}${N}.\n"
+
 echo -e "[System Info]\n"
-echo -e "  SYSTEM    : $(awk -F'[="]+' '/DESCRIPTION/{print $2}' /etc/lsb-release)"
+echo -e "  SYSTEM    : $(awk -F'[="]+' '/PRETTY_NAME/{print $2}' /etc/os-release)"
 echo -e "  KERNEL    : $(uname -sr)"
+echo -e "  Architecture : $(uname -m)"
 echo -e "  UPTIME    : ${UPTIME_DAYS} days ${UPTIME_HOURS} hours ${UPTIME_MINS} minutes ${UPTIME_SECS} seconds"
 echo -e "  CPU       : ${PROCESSOR_NAME} (${G}${PROCESSOR_COUNT}${N} vCPU)\n"
 echo -e "  MEMORY    : ${MEMORY_USED} MB / ${MEMORY_ALL} MB (${G}${MEMORY_PERCENTAGE}${N} Used)"
@@ -381,16 +351,22 @@ for LINE in "${DFH[@]}"; do
     echo "${LINE}" | awk '{ printf("Mounted: %-32s %s / %s (%s Used)\n", $1, $4, $3, $2); }' | sed -e 's/^/  /'
     echo -e "${BAR}" | sed -e 's/^/  /'
 done
-echo
+echo       
 EOF
-  # Add new motd
-  chmod +x /etc/update-motd.d/00-custom-header 
+  # Add motd Execute permissions
+  chmod +x /usr/local/bin/00-custom-header 
+
+  # Add motd to /etc/profile files.
+  if [ $(grep -c "00-custom-header" /etc/profile) -eq 0 ];then 
+    echo "/usr/local/bin/00-custom-header" >> /etc/profile
+  else
+    log::info "Custom-header already exists in the /etc/profile file "
+  fi
 
   log::success "[${COUNT}] This operation is completed!"
   sleep 1
   ((COUNT++))
 }
-
 
 
 

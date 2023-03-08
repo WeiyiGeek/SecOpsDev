@@ -717,7 +717,7 @@ disk::lvsmanager () {
   echo -e "\n 分区扩展"
   echo -e "CentOS \n lvextend -L +24G /dev/centos/root"
   echo "lsblk"
-  echo -e "Centos \n # xfs_growfs /dev/mapper/centos-root"
+  echo -e "Centos \n xfs_growfs /dev/mapper/centos-root"
 }
 
 

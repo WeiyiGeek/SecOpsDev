@@ -7,10 +7,10 @@
 ##############################################################################################################
 $AuthorSite = "https://www.weiyigeek.top"
 $Flag = 0
-$Last_db_name = ""
-$Last_record_file = "./upload.txt"
-$LocationBackupDir = "F:\weiyigeek.top"
-$Current_db_name = (get-childitem $LocationBackupDir | sort CreationTime -Descending |  Select-Object -First 1).name
+$Last_db_name = ""                       # 获取最后上传的备份文件名称
+$Last_record_file = "./upload.txt"       # 记录FTP上传成功的备份文件
+$LocationBackupDir = "F:\weiyigeek.top"  # 本地备份目录
+$Current_db_name = (get-childitem $LocationBackupDir | sort CreationTime -Descending |  Select-Object -First 1).name # 获取最新生成的备份文件
 $FTPConnectRemoteDir = "ftp://192.168.1.12/ftp/weiyigeek.top/"  # FTP 服务器链接字符串
 $FTPUser = "VwBlAGkAeQBpAEcAZQBlAGsA" # base64 编码
 $FTPPass = "UABhAHMAcwB3AG8AcgBkAA==" # base64 编码
@@ -58,6 +58,7 @@ function Upload($file_name,$ftp_user,$ftp_pass) {
 
 
 if (-not(Test-Path $Last_record_file)) {
+  start $AuthorSite 
   Write-host "[$(Date)] 首次运行备份脚本，正在生成 $Last_record_file 文本文件!" -ForegroundColor Green
   Out-File -FilePath $Last_record_file -InputObject $Current_db_name -Encoding ASCII -Append
   $Last_db_name = Get-Content -Tail 1 $Last_record_file
